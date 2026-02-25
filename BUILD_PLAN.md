@@ -755,7 +755,7 @@ LAYER 5 — Depends on Layer 4:
 - [x] 1.2 Cloud Discovery Connectors
 - [x] 1.3 Identity Connectors
 - [x] 1.4 Vulnerability Correlation Engine
-- [ ] 1.5 Configuration Auditor
+- [x] 1.5 Configuration Auditor
 - [ ] 1.6 Dashboard — Network Map
 - [ ] 1.7 Dashboard — Vulnerability Overview
 

@@ -76,6 +76,21 @@ class VulnSeverity(StrEnum):
     NONE = "none"
 
 
+class FindingSeverity(StrEnum):
+    CRITICAL = "critical"
+    HIGH = "high"
+    MEDIUM = "medium"
+    LOW = "low"
+    INFO = "info"
+
+
+class FindingStatus(StrEnum):
+    OPEN = "open"
+    ACKNOWLEDGED = "acknowledged"
+    REMEDIATED = "remediated"
+    FALSE_POSITIVE = "false_positive"
+
+
 class PolicyType(StrEnum):
     IAM_POLICY = "iam_policy"
     FIREWALL_RULE = "firewall_rule"
@@ -105,6 +120,7 @@ class EdgeType(StrEnum):
     HAS_CVE = "HAS_CVE"
     HAS_PORT = "HAS_PORT"
     HAS_CERTIFICATE = "HAS_CERTIFICATE"
+    HAS_FINDING = "HAS_FINDING"
     BELONGS_TO_SUBNET = "BELONGS_TO_SUBNET"
     BELONGS_TO_VPC = "BELONGS_TO_VPC"
 
@@ -275,6 +291,23 @@ class McpServer(BaseModel):
     last_seen: datetime = Field(default_factory=datetime.utcnow)
 
 
+class Finding(BaseModel):
+    id: UUID = Field(default_factory=uuid4)
+    tenant_id: UUID
+    rule_id: str
+    severity: FindingSeverity
+    title: str
+    description: str
+    resource_id: str
+    resource_type: str
+    remediation: str | None = None
+    details_json: str | None = None
+    status: FindingStatus = FindingStatus.OPEN
+    found_at: datetime = Field(default_factory=datetime.utcnow)
+    first_seen: datetime = Field(default_factory=datetime.utcnow)
+    last_seen: datetime = Field(default_factory=datetime.utcnow)
+
+
 # ── Discriminated union for all node types ─────────────────────────
 
 Node = Annotated[
@@ -290,7 +323,8 @@ Node = Annotated[
     | Vulnerability
     | Certificate
     | Application
-    | McpServer,
+    | McpServer
+    | Finding,
     Field(discriminator=None),
 ]
 

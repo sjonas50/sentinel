@@ -122,6 +122,23 @@ class EngramRecorded(BaseModel):
     action_count: int
 
 
+class ConfigAuditCompleted(BaseModel):
+    event_type: str = "ConfigAuditCompleted"
+    audit_id: UUID
+    findings_count: int
+    critical_count: int
+    high_count: int
+    drift_count: int
+
+
+class ConfigDriftDetected(BaseModel):
+    event_type: str = "ConfigDriftDetected"
+    resource_id: str
+    resource_type: str
+    old_hash: str
+    new_hash: str
+
+
 # Union of all event payloads
 EventPayload = (
     NodeDiscovered
@@ -136,4 +153,6 @@ EventPayload = (
     | ShadowAiDiscovered
     | PolicyViolation
     | EngramRecorded
+    | ConfigAuditCompleted
+    | ConfigDriftDetected
 )

@@ -154,7 +154,7 @@ async def graph_stats(
     labels = [
         "Host", "Service", "Port", "User", "Group", "Role",
         "Policy", "Subnet", "Vpc", "Vulnerability", "Certificate",
-        "Application", "McpServer",
+        "Application", "McpServer", "Finding", "ConfigSnapshot",
     ]
 
     counts: dict[str, int] = {}
