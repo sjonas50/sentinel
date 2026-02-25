@@ -2,7 +2,6 @@
 
 import httpx
 import pytest
-
 from sentinel_api.main import app
 
 

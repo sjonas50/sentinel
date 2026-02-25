@@ -7,14 +7,13 @@ Keep them in sync when modifying either side.
 from __future__ import annotations
 
 from datetime import datetime
-from enum import Enum
-from typing import Optional
+from enum import StrEnum
 from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field
 
 
-class EventSource(str, Enum):
+class EventSource(StrEnum):
     DISCOVER = "discover"
     DEFEND = "defend"
     GOVERN = "govern"
@@ -63,7 +62,7 @@ class VulnerabilityFound(BaseModel):
     event_type: str = "VulnerabilityFound"
     node_id: UUID
     cve_id: str
-    cvss_score: Optional[float] = None
+    cvss_score: float | None = None
     exploitable: bool = False
 
 

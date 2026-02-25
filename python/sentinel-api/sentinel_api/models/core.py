@@ -7,24 +7,23 @@ Keep them in sync when modifying either side.
 from __future__ import annotations
 
 from datetime import datetime
-from enum import Enum
-from typing import Annotated, Optional, Union
+from enum import StrEnum
+from typing import Annotated
 from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field
 
-
 # ── Enums ──────────────────────────────────────────────────────────
 
 
-class CloudProvider(str, Enum):
+class CloudProvider(StrEnum):
     AWS = "aws"
     AZURE = "azure"
     GCP = "gcp"
     ON_PREM = "onprem"
 
 
-class Protocol(str, Enum):
+class Protocol(StrEnum):
     TCP = "tcp"
     UDP = "udp"
     HTTP = "http"
@@ -34,25 +33,25 @@ class Protocol(str, Enum):
     DNS = "dns"
 
 
-class ServiceState(str, Enum):
+class ServiceState(StrEnum):
     RUNNING = "running"
     STOPPED = "stopped"
     UNKNOWN = "unknown"
 
 
-class PortState(str, Enum):
+class PortState(StrEnum):
     OPEN = "open"
     CLOSED = "closed"
     FILTERED = "filtered"
 
 
-class UserType(str, Enum):
+class UserType(StrEnum):
     HUMAN = "human"
     SERVICE_ACCOUNT = "service_account"
     SYSTEM = "system"
 
 
-class IdentitySource(str, Enum):
+class IdentitySource(StrEnum):
     ENTRA_ID = "entra_id"
     OKTA = "okta"
     AWS_IAM = "aws_iam"
@@ -61,7 +60,7 @@ class IdentitySource(str, Enum):
     LOCAL = "local"
 
 
-class Criticality(str, Enum):
+class Criticality(StrEnum):
     CRITICAL = "critical"
     HIGH = "high"
     MEDIUM = "medium"
@@ -69,7 +68,7 @@ class Criticality(str, Enum):
     INFO = "info"
 
 
-class VulnSeverity(str, Enum):
+class VulnSeverity(StrEnum):
     CRITICAL = "critical"
     HIGH = "high"
     MEDIUM = "medium"
@@ -77,7 +76,7 @@ class VulnSeverity(str, Enum):
     NONE = "none"
 
 
-class PolicyType(str, Enum):
+class PolicyType(StrEnum):
     IAM_POLICY = "iam_policy"
     FIREWALL_RULE = "firewall_rule"
     SECURITY_GROUP = "security_group"
@@ -85,7 +84,7 @@ class PolicyType(str, Enum):
     NETWORK_ACL = "network_acl"
 
 
-class AppType(str, Enum):
+class AppType(StrEnum):
     WEB_APP = "web_app"
     CONTAINER_IMAGE = "container_image"
     LAMBDA = "lambda"
@@ -93,7 +92,7 @@ class AppType(str, Enum):
     DATABASE = "database"
 
 
-class EdgeType(str, Enum):
+class EdgeType(StrEnum):
     CONNECTS_TO = "CONNECTS_TO"
     HAS_ACCESS = "HAS_ACCESS"
     MEMBER_OF = "MEMBER_OF"
@@ -117,13 +116,13 @@ class Host(BaseModel):
     id: UUID = Field(default_factory=uuid4)
     tenant_id: UUID
     ip: str
-    hostname: Optional[str] = None
-    os: Optional[str] = None
-    os_version: Optional[str] = None
-    mac_address: Optional[str] = None
-    cloud_provider: Optional[CloudProvider] = None
-    cloud_instance_id: Optional[str] = None
-    cloud_region: Optional[str] = None
+    hostname: str | None = None
+    os: str | None = None
+    os_version: str | None = None
+    mac_address: str | None = None
+    cloud_provider: CloudProvider | None = None
+    cloud_instance_id: str | None = None
+    cloud_region: str | None = None
     criticality: Criticality = Criticality.MEDIUM
     tags: list[str] = Field(default_factory=list)
     first_seen: datetime = Field(default_factory=datetime.utcnow)
@@ -134,11 +133,11 @@ class Service(BaseModel):
     id: UUID = Field(default_factory=uuid4)
     tenant_id: UUID
     name: str
-    version: Optional[str] = None
+    version: str | None = None
     port: int
     protocol: Protocol = Protocol.TCP
     state: ServiceState = ServiceState.UNKNOWN
-    banner: Optional[str] = None
+    banner: str | None = None
     first_seen: datetime = Field(default_factory=datetime.utcnow)
     last_seen: datetime = Field(default_factory=datetime.utcnow)
 
@@ -157,13 +156,13 @@ class User(BaseModel):
     id: UUID = Field(default_factory=uuid4)
     tenant_id: UUID
     username: str
-    display_name: Optional[str] = None
-    email: Optional[str] = None
+    display_name: str | None = None
+    email: str | None = None
     user_type: UserType = UserType.HUMAN
     source: IdentitySource = IdentitySource.LOCAL
     enabled: bool = True
-    mfa_enabled: Optional[bool] = None
-    last_login: Optional[datetime] = None
+    mfa_enabled: bool | None = None
+    last_login: datetime | None = None
     first_seen: datetime = Field(default_factory=datetime.utcnow)
     last_seen: datetime = Field(default_factory=datetime.utcnow)
 
@@ -172,9 +171,9 @@ class Group(BaseModel):
     id: UUID = Field(default_factory=uuid4)
     tenant_id: UUID
     name: str
-    description: Optional[str] = None
+    description: str | None = None
     source: IdentitySource = IdentitySource.LOCAL
-    member_count: Optional[int] = None
+    member_count: int | None = None
     first_seen: datetime = Field(default_factory=datetime.utcnow)
     last_seen: datetime = Field(default_factory=datetime.utcnow)
 
@@ -183,7 +182,7 @@ class Role(BaseModel):
     id: UUID = Field(default_factory=uuid4)
     tenant_id: UUID
     name: str
-    description: Optional[str] = None
+    description: str | None = None
     source: IdentitySource = IdentitySource.LOCAL
     permissions: list[str] = Field(default_factory=list)
     first_seen: datetime = Field(default_factory=datetime.utcnow)
@@ -196,7 +195,7 @@ class Policy(BaseModel):
     name: str
     policy_type: PolicyType
     source: str
-    rules_json: Optional[str] = None
+    rules_json: str | None = None
     first_seen: datetime = Field(default_factory=datetime.utcnow)
     last_seen: datetime = Field(default_factory=datetime.utcnow)
 
@@ -205,9 +204,9 @@ class Subnet(BaseModel):
     id: UUID = Field(default_factory=uuid4)
     tenant_id: UUID
     cidr: str
-    name: Optional[str] = None
-    cloud_provider: Optional[CloudProvider] = None
-    vpc_id: Optional[str] = None
+    name: str | None = None
+    cloud_provider: CloudProvider | None = None
+    vpc_id: str | None = None
     is_public: bool = False
     first_seen: datetime = Field(default_factory=datetime.utcnow)
     last_seen: datetime = Field(default_factory=datetime.utcnow)
@@ -217,8 +216,8 @@ class Vpc(BaseModel):
     id: UUID = Field(default_factory=uuid4)
     tenant_id: UUID
     vpc_id: str
-    name: Optional[str] = None
-    cidr: Optional[str] = None
+    name: str | None = None
+    cidr: str | None = None
     cloud_provider: CloudProvider
     region: str
     first_seen: datetime = Field(default_factory=datetime.utcnow)
@@ -229,14 +228,14 @@ class Vulnerability(BaseModel):
     id: UUID = Field(default_factory=uuid4)
     tenant_id: UUID
     cve_id: str
-    cvss_score: Optional[float] = None
-    cvss_vector: Optional[str] = None
-    epss_score: Optional[float] = None
+    cvss_score: float | None = None
+    cvss_vector: str | None = None
+    epss_score: float | None = None
     severity: VulnSeverity = VulnSeverity.NONE
-    description: Optional[str] = None
+    description: str | None = None
     exploitable: bool = False
     in_cisa_kev: bool = False
-    published_date: Optional[datetime] = None
+    published_date: datetime | None = None
     first_seen: datetime = Field(default_factory=datetime.utcnow)
     last_seen: datetime = Field(default_factory=datetime.utcnow)
 
@@ -258,7 +257,7 @@ class Application(BaseModel):
     id: UUID = Field(default_factory=uuid4)
     tenant_id: UUID
     name: str
-    version: Optional[str] = None
+    version: str | None = None
     app_type: AppType
     first_seen: datetime = Field(default_factory=datetime.utcnow)
     last_seen: datetime = Field(default_factory=datetime.utcnow)
@@ -279,21 +278,19 @@ class McpServer(BaseModel):
 # ── Discriminated union for all node types ─────────────────────────
 
 Node = Annotated[
-    Union[
-        Host,
-        Service,
-        Port,
-        User,
-        Group,
-        Role,
-        Policy,
-        Subnet,
-        Vpc,
-        Vulnerability,
-        Certificate,
-        Application,
-        McpServer,
-    ],
+    Host
+    | Service
+    | Port
+    | User
+    | Group
+    | Role
+    | Policy
+    | Subnet
+    | Vpc
+    | Vulnerability
+    | Certificate
+    | Application
+    | McpServer,
     Field(discriminator=None),
 ]
 
@@ -302,11 +299,11 @@ Node = Annotated[
 
 
 class EdgeProperties(BaseModel):
-    protocol: Optional[Protocol] = None
-    port: Optional[int] = None
-    encrypted: Optional[bool] = None
+    protocol: Protocol | None = None
+    port: int | None = None
+    encrypted: bool | None = None
     permissions: list[str] = Field(default_factory=list)
-    exploitability_score: Optional[float] = None
+    exploitability_score: float | None = None
     extra: dict[str, object] = Field(default_factory=dict)
 
 
@@ -327,7 +324,7 @@ class Edge(BaseModel):
 class AttackStep(BaseModel):
     node_id: UUID
     edge_id: UUID
-    technique: Optional[str] = None
+    technique: str | None = None
     description: str
     exploitability: float
 
