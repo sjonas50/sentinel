@@ -27,6 +27,17 @@ def test_sync_result_total_assets() -> None:
     assert r.total_assets == 0
 
 
+def test_sync_result_total_assets_includes_new_fields() -> None:
+    from sentinel_api.models.core import Application, AppType, Group, Service
+
+    tid = uuid4()
+    r = SyncResult(connector_name="test")
+    r.applications.append(Application(tenant_id=tid, name="bucket", app_type=AppType.DATABASE))
+    r.groups.append(Group(tenant_id=tid, name="admins"))
+    r.services.append(Service(tenant_id=tid, name="db", port=5432))
+    assert r.total_assets == 3
+
+
 @pytest.mark.asyncio
 async def test_base_connector_sync() -> None:
     tid = uuid4()

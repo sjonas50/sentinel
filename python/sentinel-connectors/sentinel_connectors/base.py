@@ -12,7 +12,20 @@ from sentinel_api.engram.session import EngramSession
 if TYPE_CHECKING:
     from uuid import UUID
 
-    from sentinel_api.models.core import Edge, Host, Policy, Role, Subnet, User, Vpc
+    from sentinel_api.models.core import (
+        Application,
+        Edge,
+        EdgeProperties,
+        EdgeType,
+        Group,
+        Host,
+        Policy,
+        Role,
+        Service,
+        Subnet,
+        User,
+        Vpc,
+    )
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +41,9 @@ class SyncResult:
     policies: list[Policy] = field(default_factory=list)
     subnets: list[Subnet] = field(default_factory=list)
     vpcs: list[Vpc] = field(default_factory=list)
+    applications: list[Application] = field(default_factory=list)
+    groups: list[Group] = field(default_factory=list)
+    services: list[Service] = field(default_factory=list)
     edges: list[Edge] = field(default_factory=list)
     errors: list[str] = field(default_factory=list)
 
@@ -40,6 +56,9 @@ class SyncResult:
             + len(self.policies)
             + len(self.subnets)
             + len(self.vpcs)
+            + len(self.applications)
+            + len(self.groups)
+            + len(self.services)
         )
 
 
@@ -72,6 +91,24 @@ class BaseConnector(ABC):
         taken during discovery. Returns a SyncResult with all found assets.
         """
 
+    def _make_edge(
+        self,
+        source_id: UUID,
+        target_id: UUID,
+        edge_type: EdgeType,
+        properties: EdgeProperties | None = None,
+    ) -> Edge:
+        """Create an Edge with the connector's tenant_id."""
+        from sentinel_api.models.core import Edge, EdgeProperties
+
+        return Edge(
+            tenant_id=self.tenant_id,
+            source_id=source_id,
+            target_id=target_id,
+            edge_type=edge_type,
+            properties=properties or EdgeProperties(),
+        )
+
     async def sync(self) -> SyncResult:
         """Run a full sync: create Engram session, discover, finalize.
 
@@ -96,6 +133,9 @@ class BaseConnector(ABC):
                     "policies": len(result.policies),
                     "subnets": len(result.subnets),
                     "vpcs": len(result.vpcs),
+                    "applications": len(result.applications),
+                    "groups": len(result.groups),
+                    "services": len(result.services),
                     "edges": len(result.edges),
                     "errors": len(result.errors),
                 },
