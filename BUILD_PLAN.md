@@ -742,7 +742,7 @@ LAYER 5 — Depends on Layer 4:
 - [x] 0.1 Initialize Repository
 - [x] 0.2 Shared Types & Config
 - [x] 0.3 Database Schemas
-- [ ] 0.4 Local Dev Infrastructure
+- [x] 0.4 Local Dev Infrastructure
 - [ ] 0.5 Engram Core Library
 - [ ] 0.6 Graph Client
 - [ ] 0.7 API Layer Shell
