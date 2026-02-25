@@ -48,3 +48,41 @@ class AzureCredentials:
             client_secret=os.environ.get("AZURE_CLIENT_SECRET", ""),
             subscription_id=os.environ.get("AZURE_SUBSCRIPTION_ID", ""),
         )
+
+
+@dataclass(frozen=True)
+class GcpCredentials:
+    """GCP service account credentials."""
+
+    project_id: str
+    region: str = "us-central1"
+    service_account_key_path: str | None = None
+
+    @classmethod
+    def from_env(cls) -> GcpCredentials:
+        """Load GCP credentials from environment variables.
+
+        Uses GOOGLE_APPLICATION_CREDENTIALS for the key file path (standard
+        GCP convention), and GCP_PROJECT_ID / GCP_REGION for project config.
+        """
+        return cls(
+            project_id=os.environ.get("GCP_PROJECT_ID", ""),
+            region=os.environ.get("GCP_REGION", "us-central1"),
+            service_account_key_path=os.environ.get("GOOGLE_APPLICATION_CREDENTIALS"),
+        )
+
+
+@dataclass(frozen=True)
+class OktaCredentials:
+    """Okta API token credentials."""
+
+    domain: str
+    api_token: str
+
+    @classmethod
+    def from_env(cls) -> OktaCredentials:
+        """Load Okta credentials from environment variables."""
+        return cls(
+            domain=os.environ.get("OKTA_DOMAIN", ""),
+            api_token=os.environ.get("OKTA_API_TOKEN", ""),
+        )

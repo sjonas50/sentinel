@@ -4,7 +4,12 @@ from __future__ import annotations
 
 import os
 
-from sentinel_connectors.credentials import AwsCredentials, AzureCredentials
+from sentinel_connectors.credentials import (
+    AwsCredentials,
+    AzureCredentials,
+    GcpCredentials,
+    OktaCredentials,
+)
 
 
 def test_aws_credentials_from_env() -> None:
@@ -55,6 +60,75 @@ def test_azure_credentials_from_env() -> None:
         assert creds.tenant_id == "tid-123"
         assert creds.client_id == "cid-456"
         assert creds.subscription_id == "sub-789"
+    finally:
+        for k, v in orig.items():
+            if v is not None:
+                os.environ[k] = v
+            else:
+                os.environ.pop(k, None)
+
+
+def test_gcp_credentials_from_env() -> None:
+    orig = {k: os.environ.pop(k, None) for k in (
+        "GCP_PROJECT_ID", "GOOGLE_APPLICATION_CREDENTIALS", "GCP_REGION",
+    )}
+    try:
+        os.environ["GCP_PROJECT_ID"] = "my-project"
+        os.environ["GCP_REGION"] = "europe-west1"
+        creds = GcpCredentials.from_env()
+        assert creds.project_id == "my-project"
+        assert creds.region == "europe-west1"
+        assert creds.service_account_key_path is None
+    finally:
+        for k, v in orig.items():
+            if v is not None:
+                os.environ[k] = v
+            else:
+                os.environ.pop(k, None)
+
+
+def test_gcp_credentials_defaults() -> None:
+    orig = {k: os.environ.pop(k, None) for k in (
+        "GCP_PROJECT_ID", "GOOGLE_APPLICATION_CREDENTIALS", "GCP_REGION",
+    )}
+    try:
+        creds = GcpCredentials.from_env()
+        assert creds.project_id == ""
+        assert creds.region == "us-central1"
+    finally:
+        for k, v in orig.items():
+            if v is not None:
+                os.environ[k] = v
+            else:
+                os.environ.pop(k, None)
+
+
+def test_okta_credentials_from_env() -> None:
+    orig = {k: os.environ.pop(k, None) for k in (
+        "OKTA_DOMAIN", "OKTA_API_TOKEN",
+    )}
+    try:
+        os.environ["OKTA_DOMAIN"] = "dev-12345.okta.com"
+        os.environ["OKTA_API_TOKEN"] = "token-abc"
+        creds = OktaCredentials.from_env()
+        assert creds.domain == "dev-12345.okta.com"
+        assert creds.api_token == "token-abc"
+    finally:
+        for k, v in orig.items():
+            if v is not None:
+                os.environ[k] = v
+            else:
+                os.environ.pop(k, None)
+
+
+def test_okta_credentials_defaults() -> None:
+    orig = {k: os.environ.pop(k, None) for k in (
+        "OKTA_DOMAIN", "OKTA_API_TOKEN",
+    )}
+    try:
+        creds = OktaCredentials.from_env()
+        assert creds.domain == ""
+        assert creds.api_token == ""
     finally:
         for k, v in orig.items():
             if v is not None:
