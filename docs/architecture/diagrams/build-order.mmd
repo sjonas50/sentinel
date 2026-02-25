@@ -1,0 +1,65 @@
+%% Sentinel — Build Order / Phase Timeline
+%% Gantt chart showing phases, dependencies, and parallelism
+
+gantt
+    title Sentinel Build Phases — Dependency-Aware Timeline
+    dateFormat  YYYY-MM-DD
+    axisFormat  W%W
+
+    section Shared Infrastructure
+    sentinel-common (types, config)          :s1, 2026-03-02, 3d
+    sentinel-events (Kafka client)           :s2, after s1, 5d
+    sentinel-graph (Neo4j client + schema)   :s3, after s1, 7d
+    sentinel-engram (adapt existing IP)      :s4, after s1, 10d
+    sentinel-auth (JWT, RBAC, tenant)        :s5, after s1, 5d
+    Neo4j schema + constraints               :s6, after s3, 5d
+    Kafka topics + Redpanda setup            :s7, 2026-03-02, 3d
+    PostgreSQL schema + migrations           :s8, 2026-03-02, 5d
+    OPA/Rego base policy framework           :s9, after s1, 7d
+    Docker-compose dev environment           :s10, 2026-03-02, 5d
+    CI pipelines (Rust + Python + JS)        :s11, 2026-03-02, 5d
+    API Gateway shell (FastAPI + auth)       :s12, after s5, 5d
+    Dashboard shell (React + routing)        :s13, 2026-03-09, 7d
+
+    section DISCOVER (Phase 1)
+    Scanner daemon (Rust, Nmap wrapper)      :d1, after s6, 14d
+    Cloud connectors (AWS)                   :d2, after s2, 10d
+    Cloud connectors (Azure, GCP)            :d3, after d2, 7d
+    Graph ingestor (Kafka to Neo4j)          :d4, after s6, 10d
+    Config auditor (top 5 tools)             :d5, after d4, 14d
+    Vuln correlator (NVD + EPSS + KEV)       :d6, after d4, 10d
+    Dashboard: network map view              :d7, after s13, 14d
+    Engram integration into scanner          :d8, after s4, 5d
+    DISCOVER integration testing             :d9, after d4, 7d
+
+    section DEFEND (Phase 2)
+    Attack path engine (Rust, can start early with synthetic data) :f1, after s6, 21d
+    Attack path + real graph integration     :f2, after d9, 7d
+    Risk scoring model                       :f3, after f1, 5d
+    SIEM connector (Elastic)                 :f4, after s2, 14d
+    Threat hunt agents (3 playbooks)         :f5, after f4, 14d
+    NL query translation                     :f6, after f4, 7d
+    Adversarial simulation v1                :f7, after f2, 14d
+    Dashboard: attack paths + hunt feed      :f8, after d7, 14d
+    DEFEND integration testing               :f9, after f2, 7d
+
+    section GOVERN (Phase 3, partial parallel with DEFEND)
+    MCP proxy (Rust, from AgentOps IP)       :g1, after s9, 14d
+    Shadow AI traffic analysis               :g2, after s2, 10d
+    OPA policy library for AI governance     :g3, after s9, 10d
+    Agent identity registry                  :g4, after g1, 10d
+    AI DLP (PII detection + enforcement)     :g5, after g3, 14d
+    Dashboard: AI governance views           :g6, after f8, 10d
+
+    section OBSERVE (Phase 3-4)
+    Engram query API                         :o1, after s4, 7d
+    Compliance engine (SOC2, ISO27001)       :o2, after o1, 14d
+    Insurance evidence packages              :o3, after o2, 7d
+    Dashboard: compliance views              :o4, after g6, 10d
+
+    section Integration + Polish (Phase 4)
+    Response framework with approval gates   :p1, after f9, 14d
+    Additional SIEM connectors (Splunk)      :p2, after f4, 10d
+    Additional tool integrations             :p3, after d5, 14d
+    Performance optimization                 :p4, after p1, 10d
+    Security hardening + pen test            :p5, after p4, 10d

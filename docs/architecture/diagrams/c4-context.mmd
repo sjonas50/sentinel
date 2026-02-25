@@ -1,0 +1,42 @@
+%% Sentinel Platform — C4 Context Diagram (Mermaid)
+%% Shows the system boundary and external actors/systems
+
+graph TB
+    subgraph External Actors
+        CISO["CISO / Security Lead<br/><i>Views posture, approves responses</i>"]
+        SOC["SOC Analyst<br/><i>Investigates threats, runs hunts</i>"]
+        AUDITOR["Auditor / Insurer<br/><i>Reviews compliance evidence</i>"]
+    end
+
+    subgraph External Systems
+        CLOUD["Cloud Providers<br/><i>AWS, Azure, GCP APIs</i>"]
+        SIEM["SIEM Platform<br/><i>Elastic, Splunk, MS Sentinel</i>"]
+        EDR["EDR / Endpoint<br/><i>CrowdStrike, SentinelOne</i>"]
+        IAM["Identity Providers<br/><i>Entra ID, Okta</i>"]
+        FW["Firewalls / Network<br/><i>Palo Alto, Fortinet</i>"]
+        AI_SVC["AI Services<br/><i>OpenAI, Anthropic, etc.</i>"]
+        MCP_SRV["MCP Servers<br/><i>Customer AI tool infra</i>"]
+        NVD["Vuln Databases<br/><i>NVD, EPSS, CISA KEV</i>"]
+        LLM["LLM Provider<br/><i>Claude API / Local Llama</i>"]
+    end
+
+    SENTINEL["<b>SENTINEL PLATFORM</b><br/><br/>Autonomous Cyber Defense<br/><br/>DISCOVER: Network digital twin<br/>DEFEND: Threat hunting + simulation<br/>GOVERN: AI agent governance<br/>OBSERVE: Engram audit trail"]
+
+    CISO -->|"Views dashboard,<br/>approves actions"| SENTINEL
+    SOC -->|"Runs hunts,<br/>investigates findings"| SENTINEL
+    AUDITOR -->|"Reviews compliance<br/>evidence packages"| SENTINEL
+
+    SENTINEL -->|"Discovers assets,<br/>pulls configs"| CLOUD
+    SENTINEL -->|"Queries logs,<br/>deploys detections"| SIEM
+    SENTINEL -->|"Pulls endpoint<br/>telemetry"| EDR
+    SENTINEL -->|"Audits identities<br/>and access"| IAM
+    SENTINEL -->|"Reads rules,<br/>pushes blocks"| FW
+    SENTINEL -->|"Monitors traffic<br/>to AI services"| AI_SVC
+    SENTINEL -->|"Intercepts and<br/>secures MCP calls"| MCP_SRV
+    SENTINEL -->|"Correlates CVEs,<br/>EPSS scores"| NVD
+    SENTINEL -->|"Agent reasoning,<br/>NL queries"| LLM
+
+    style SENTINEL fill:#1a1a2e,stroke:#e94560,stroke-width:3px,color:#ffffff
+    style CISO fill:#0f3460,stroke:#ffffff,color:#ffffff
+    style SOC fill:#0f3460,stroke:#ffffff,color:#ffffff
+    style AUDITOR fill:#0f3460,stroke:#ffffff,color:#ffffff

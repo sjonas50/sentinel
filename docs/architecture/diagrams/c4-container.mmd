@@ -1,0 +1,101 @@
+%% Sentinel Platform — C4 Container Diagram (Mermaid)
+%% Shows the major containers (deployable units) and their interactions
+
+graph TB
+    subgraph Frontend ["FRONTEND"]
+        DASH["Dashboard<br/><i>React + D3.js</i><br/><i>Interactive network map,<br/>attack paths, compliance</i>"]
+    end
+
+    subgraph API ["API LAYER"]
+        GW["API Gateway<br/><i>Python / FastAPI</i><br/><i>Auth, routing, WebSocket</i>"]
+    end
+
+    subgraph Discover ["PILLAR 1: DISCOVER"]
+        SCAN["Scanner Daemon<br/><i>Rust</i><br/><i>Nmap wrapper, scheduling,<br/>change detection</i>"]
+        CLOUD_CONN["Cloud Connectors<br/><i>Python</i><br/><i>AWS, Azure, GCP<br/>API discovery</i>"]
+        CFG_AUD["Config Auditor<br/><i>Python</i><br/><i>CIS benchmarks,<br/>drift detection</i>"]
+        VULN["Vuln Correlator<br/><i>Python</i><br/><i>NVD, EPSS, KEV<br/>matching</i>"]
+        INGEST["Graph Ingestor<br/><i>Python</i><br/><i>Kafka consumer,<br/>Neo4j delta writes</i>"]
+    end
+
+    subgraph Defend ["PILLAR 2: DEFEND"]
+        PATHS["Attack Path Engine<br/><i>Rust</i><br/><i>Pathfinding, scoring,<br/>blast radius</i>"]
+        SIM["Simulation Engine<br/><i>Python / LangGraph</i><br/><i>Offensive + defensive<br/>agent swarms</i>"]
+        HUNT["Threat Hunting<br/><i>Python / LangGraph</i><br/><i>SIEM agents,<br/>NL query, Sigma</i>"]
+        RESP["Response Engine<br/><i>Python</i><br/><i>Approval gates,<br/>rollback</i>"]
+    end
+
+    subgraph Govern ["PILLAR 3: GOVERN"]
+        SHADOW["Shadow AI Discovery<br/><i>Python</i><br/><i>Traffic analysis,<br/>DNS monitoring</i>"]
+        MCP_P["MCP Security Proxy<br/><i>Rust</i><br/><i>Intercept, inspect,<br/>enforce policies</i>"]
+        AGENT_ID["Agent Identity<br/><i>Python</i><br/><i>Registry, baseline,<br/>drift detection</i>"]
+        DLP["AI DLP<br/><i>Python</i><br/><i>PII detection,<br/>block/redact</i>"]
+    end
+
+    subgraph Observe ["PILLAR 4: OBSERVE"]
+        ENGRAM["Engram Core<br/><i>Rust</i><br/><i>Git object storage,<br/>BLAKE3 hashing</i>"]
+        COMPLY["Compliance Engine<br/><i>Python</i><br/><i>SOC2, ISO27001,<br/>NIST CSF</i>"]
+        INSURE["Insurance Evidence<br/><i>Python</i><br/><i>Evidence packages,<br/>trend analysis</i>"]
+    end
+
+    subgraph Data ["DATA LAYER"]
+        NEO4J[("Neo4j<br/><i>Knowledge Graph</i><br/><i>Topology, attack paths</i>")]
+        PG[("PostgreSQL<br/><i>App State</i><br/><i>Tenants, users, config</i>")]
+        CH[("ClickHouse<br/><i>Analytics</i><br/><i>Events, engram index</i>")]
+        KAFKA["Kafka / Redpanda<br/><i>Event Stream</i>"]
+        S3["Object Storage<br/><i>Engram Git repos</i>"]
+        OPA["OPA Server<br/><i>Policy Engine</i><br/><i>Rego policies</i>"]
+    end
+
+    %% Frontend to API
+    DASH -->|"REST + WebSocket"| GW
+
+    %% API to services
+    GW -->|"gRPC"| PATHS
+    GW -->|"gRPC"| ENGRAM
+    GW -->|"gRPC"| MCP_P
+    GW -->|"internal"| HUNT
+    GW -->|"internal"| SIM
+    GW -->|"internal"| COMPLY
+
+    %% Discover data flow
+    SCAN -->|"asset events"| KAFKA
+    CLOUD_CONN -->|"asset events"| KAFKA
+    CFG_AUD -->|"config events"| KAFKA
+    VULN -->|"vuln events"| KAFKA
+    KAFKA -->|"consume"| INGEST
+    INGEST -->|"write"| NEO4J
+
+    %% Defend data flow
+    PATHS -->|"read snapshot"| NEO4J
+    SIM -->|"read topology"| NEO4J
+    HUNT -->|"findings"| KAFKA
+    RESP -->|"response events"| KAFKA
+    SIM -->|"reasoning"| ENGRAM
+
+    %% Govern data flow
+    SHADOW -->|"AI tool events"| KAFKA
+    MCP_P -->|"policy check"| OPA
+    MCP_P -->|"audit events"| KAFKA
+    AGENT_ID -->|"agent events"| KAFKA
+    DLP -->|"DLP events"| KAFKA
+
+    %% Observe data flow
+    KAFKA -->|"all events"| CH
+    KAFKA -->|"engram sessions"| ENGRAM
+    ENGRAM -->|"store objects"| S3
+    ENGRAM -->|"index metadata"| CH
+    COMPLY -->|"read"| CH
+    COMPLY -->|"read"| NEO4J
+    INSURE -->|"read"| CH
+
+    %% Cross-pillar
+    HUNT -->|"reasoning"| ENGRAM
+    RESP -->|"reasoning"| ENGRAM
+    SCAN -->|"reasoning"| ENGRAM
+
+    style Discover fill:#1a1a2e,stroke:#16c79a,stroke-width:2px,color:#ffffff
+    style Defend fill:#1a1a2e,stroke:#e94560,stroke-width:2px,color:#ffffff
+    style Govern fill:#1a1a2e,stroke:#f7d716,stroke-width:2px,color:#ffffff
+    style Observe fill:#1a1a2e,stroke:#11999e,stroke-width:2px,color:#ffffff
+    style Data fill:#0f3460,stroke:#ffffff,stroke-width:2px,color:#ffffff

@@ -1,0 +1,118 @@
+%% Sentinel — Component Dependency Graph
+%% Arrows point from dependent to dependency (A --> B means A depends on B)
+%% Edge labels indicate the nature of the dependency
+
+graph BT
+    subgraph Shared ["SHARED INFRASTRUCTURE (must build first)"]
+        COMMON["sentinel-common<br/><i>Types, config, errors</i>"]
+        EVENTS["sentinel-events<br/><i>Kafka schemas + client</i>"]
+        GRAPH["sentinel-graph<br/><i>Neo4j client + schema</i>"]
+        ENGRAM_LIB["sentinel-engram<br/><i>Reasoning capture lib</i>"]
+        AUTH["sentinel-auth<br/><i>JWT, RBAC, tenant</i>"]
+        OPA_POL["OPA Base Policies<br/><i>Rego policy library</i>"]
+        SCHEMAS["Data Schemas<br/><i>Neo4j, PG, CH, Kafka</i>"]
+    end
+
+    subgraph D1 ["DISCOVER"]
+        SCANNER["Scanner<br/><i>Rust daemon</i>"]
+        CLOUD["Cloud Connectors<br/><i>Python</i>"]
+        CFGAUD["Config Auditor<br/><i>Python</i>"]
+        VULNCORR["Vuln Correlator<br/><i>Python</i>"]
+        GRAPHING["Graph Ingestor<br/><i>Python</i>"]
+    end
+
+    subgraph D2 ["DEFEND"]
+        ATKPATH["Attack Path Engine<br/><i>Rust</i>"]
+        SIMU["Simulation Engine<br/><i>Python + LLM</i>"]
+        THUNT["Threat Hunting<br/><i>Python + LLM</i>"]
+        RESPONSE["Response Engine<br/><i>Python</i>"]
+    end
+
+    subgraph D3 ["GOVERN"]
+        SHADAI["Shadow AI Discovery<br/><i>Python</i>"]
+        MCPPROX["MCP Proxy<br/><i>Rust</i>"]
+        AGENTID["Agent Identity<br/><i>Python</i>"]
+        AIDLP["AI DLP<br/><i>Python</i>"]
+    end
+
+    subgraph D4 ["OBSERVE"]
+        COMPLY["Compliance Engine<br/><i>Python</i>"]
+        INSURE["Insurance Evidence<br/><i>Python</i>"]
+    end
+
+    subgraph FE ["FRONTEND + API"]
+        GATEWAY["API Gateway<br/><i>FastAPI</i>"]
+        DASHBOARD["Dashboard<br/><i>React + D3</i>"]
+    end
+
+    %% Shared infra internal deps
+    EVENTS --> COMMON
+    GRAPH --> COMMON
+    ENGRAM_LIB --> COMMON
+    AUTH --> COMMON
+
+    %% DISCOVER deps on shared
+    SCANNER --> COMMON
+    SCANNER --> EVENTS
+    SCANNER --> ENGRAM_LIB
+    CLOUD --> EVENTS
+    CFGAUD --> EVENTS
+    VULNCORR --> EVENTS
+    GRAPHING --> EVENTS
+    GRAPHING --> GRAPH
+    GRAPHING --> SCHEMAS
+
+    %% DEFEND deps on shared
+    ATKPATH --> COMMON
+    ATKPATH --> GRAPH
+    SIMU --> EVENTS
+    SIMU --> GRAPH
+    SIMU --> ENGRAM_LIB
+    THUNT --> EVENTS
+    THUNT --> ENGRAM_LIB
+    RESPONSE --> EVENTS
+    RESPONSE --> ENGRAM_LIB
+    RESPONSE --> OPA_POL
+
+    %% DEFEND deps on DISCOVER (critical cross-pillar)
+    ATKPATH -.->|"HARD: needs<br/>populated graph"| GRAPHING
+    SIMU -.->|"HARD: needs<br/>topology data"| GRAPHING
+    ATKPATH -.->|"needs vuln<br/>scores on nodes"| VULNCORR
+
+    %% GOVERN deps on shared
+    SHADAI --> EVENTS
+    MCPPROX --> COMMON
+    MCPPROX --> ENGRAM_LIB
+    MCPPROX --> OPA_POL
+    AGENTID --> EVENTS
+    AGENTID --> ENGRAM_LIB
+    AIDLP --> EVENTS
+    AIDLP --> OPA_POL
+
+    %% GOVERN soft deps on DISCOVER
+    SHADAI -.->|"SOFT: enriches<br/>with asset data"| GRAPHING
+
+    %% OBSERVE deps on shared
+    COMPLY --> ENGRAM_LIB
+    COMPLY --> GRAPH
+    INSURE --> ENGRAM_LIB
+
+    %% OBSERVE deps on all pillars (reads their engrams)
+    COMPLY -.->|"reads reasoning<br/>from all pillars"| SCANNER
+    COMPLY -.->|"reads reasoning<br/>from all pillars"| THUNT
+    COMPLY -.->|"reads reasoning<br/>from all pillars"| MCPPROX
+
+    %% Frontend + API deps
+    GATEWAY --> AUTH
+    DASHBOARD -->|"REST + WS"| GATEWAY
+
+    %% Styling
+    style Shared fill:#2d3436,stroke:#00cec9,stroke-width:2px,color:#ffffff
+    style D1 fill:#2d3436,stroke:#00b894,stroke-width:2px,color:#ffffff
+    style D2 fill:#2d3436,stroke:#d63031,stroke-width:2px,color:#ffffff
+    style D3 fill:#2d3436,stroke:#fdcb6e,stroke-width:2px,color:#ffffff
+    style D4 fill:#2d3436,stroke:#0984e3,stroke-width:2px,color:#ffffff
+    style FE fill:#2d3436,stroke:#a29bfe,stroke-width:2px,color:#ffffff
+
+    linkStyle 16,17,18 stroke:#d63031,stroke-width:3px
+    linkStyle 19,24,25 stroke:#fdcb6e,stroke-width:2px,stroke-dasharray:5
