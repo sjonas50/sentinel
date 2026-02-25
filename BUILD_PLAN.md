@@ -741,7 +741,7 @@ LAYER 5 — Depends on Layer 4:
 ### Phase 0: Foundation
 - [x] 0.1 Initialize Repository
 - [x] 0.2 Shared Types & Config
-- [ ] 0.3 Database Schemas
+- [x] 0.3 Database Schemas
 - [ ] 0.4 Local Dev Infrastructure
 - [ ] 0.5 Engram Core Library
 - [ ] 0.6 Graph Client
