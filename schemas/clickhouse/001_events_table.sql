@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS events (
 ENGINE = MergeTree()
 PARTITION BY toYYYYMM(timestamp)
 ORDER BY (tenant_id, timestamp, event_type)
-TTL timestamp + INTERVAL 365 DAY
+TTL toDateTime(timestamp) + INTERVAL 365 DAY
 SETTINGS index_granularity = 8192;
 
 -- ── Materialized Views for Common Queries ──────────────────────────

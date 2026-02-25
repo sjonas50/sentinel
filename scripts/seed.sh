@@ -4,6 +4,7 @@
 #
 # Applies all schema migrations to local development databases.
 # Requires docker-compose services to be running (make docker-up).
+# Uses docker exec to run queries inside containers — no local DB CLI needed.
 # ============================================================================
 
 set -euo pipefail
@@ -22,96 +23,82 @@ info()  { echo -e "${GREEN}[INFO]${NC} $*"; }
 warn()  { echo -e "${YELLOW}[WARN]${NC} $*"; }
 error() { echo -e "${RED}[ERROR]${NC} $*"; }
 
-# ── Load env ────────────────────────────────────────────────────────
+# ── Wait for healthy service ─────────────────────────────────────
 
-if [ -f "$PROJECT_DIR/.env" ]; then
-    set -a
-    # shellcheck disable=SC1091
-    source "$PROJECT_DIR/.env"
-    set +a
-fi
+wait_for_healthy() {
+    local container="$1"
+    local max_wait="${2:-60}"
+    local elapsed=0
 
-POSTGRES_HOST="${POSTGRES_HOST:-localhost}"
-POSTGRES_PORT="${POSTGRES_PORT:-5432}"
-POSTGRES_DB="${POSTGRES_DB:-sentinel}"
-POSTGRES_USER="${POSTGRES_USER:-sentinel}"
-POSTGRES_PASSWORD="${POSTGRES_PASSWORD:-sentinel-dev}"
-
-NEO4J_URI="${NEO4J_URI:-bolt://localhost:7687}"
-NEO4J_USER="${NEO4J_USER:-neo4j}"
-NEO4J_PASSWORD="${NEO4J_PASSWORD:-sentinel-dev}"
-
-CLICKHOUSE_HOST="${CLICKHOUSE_HOST:-localhost}"
-CLICKHOUSE_PORT="${CLICKHOUSE_PORT:-8123}"
-CLICKHOUSE_DB="${CLICKHOUSE_DB:-sentinel}"
-CLICKHOUSE_USER="${CLICKHOUSE_USER:-default}"
-CLICKHOUSE_PASSWORD="${CLICKHOUSE_PASSWORD:-}"
-
-# ── PostgreSQL ──────────────────────────────────────────────────────
-
-apply_postgres() {
-    info "Applying PostgreSQL schemas..."
-
-    for migration in "$SCHEMAS_DIR"/postgres/*.sql; do
-        info "  Applying $(basename "$migration")..."
-        PGPASSWORD="$POSTGRES_PASSWORD" psql \
-            -h "$POSTGRES_HOST" \
-            -p "$POSTGRES_PORT" \
-            -U "$POSTGRES_USER" \
-            -d "$POSTGRES_DB" \
-            -f "$migration" \
-            --set ON_ERROR_STOP=1
+    info "Waiting for $container to be healthy..."
+    while [ $elapsed -lt "$max_wait" ]; do
+        local status
+        status=$(docker inspect --format='{{.State.Health.Status}}' "$container" 2>/dev/null || echo "not_found")
+        if [ "$status" = "healthy" ]; then
+            info "$container is healthy."
+            return 0
+        fi
+        sleep 2
+        elapsed=$((elapsed + 2))
     done
 
+    error "$container did not become healthy within ${max_wait}s (status: $status)"
+    return 1
+}
+
+# ── PostgreSQL ──────────────────────────────────────────────────
+
+apply_postgres() {
+    wait_for_healthy sentinel-postgres
+
+    info "Applying PostgreSQL schemas..."
+    for migration in "$SCHEMAS_DIR"/postgres/*.sql; do
+        info "  Applying $(basename "$migration")..."
+        docker exec -i sentinel-postgres \
+            psql -U sentinel -d sentinel --set ON_ERROR_STOP=1 \
+            < "$migration"
+    done
     info "PostgreSQL schemas applied."
 }
 
-# ── Neo4j ───────────────────────────────────────────────────────────
+# ── Neo4j ────────────────────────────────────────────────────────
 
 apply_neo4j() {
-    info "Applying Neo4j schemas..."
+    wait_for_healthy sentinel-neo4j
 
+    info "Applying Neo4j schemas..."
     for migration in "$SCHEMAS_DIR"/neo4j/*.cypher; do
         info "  Applying $(basename "$migration")..."
-        cypher-shell \
-            -a "$NEO4J_URI" \
-            -u "$NEO4J_USER" \
-            -p "$NEO4J_PASSWORD" \
-            -f "$migration"
+        # cypher-shell inside the container reads from stdin
+        docker exec -i sentinel-neo4j \
+            cypher-shell -u neo4j -p sentinel-dev \
+            < "$migration"
     done
-
     info "Neo4j schemas applied."
 }
 
-# ── ClickHouse ──────────────────────────────────────────────────────
+# ── ClickHouse ────────────────────────────────────────────────────
 
 apply_clickhouse() {
-    info "Applying ClickHouse schemas..."
+    wait_for_healthy sentinel-clickhouse
 
+    # Create the sentinel database if it doesn't exist
+    info "Ensuring ClickHouse 'sentinel' database exists..."
+    echo "CREATE DATABASE IF NOT EXISTS sentinel;" | \
+        docker exec -i sentinel-clickhouse \
+            clickhouse-client --user default
+
+    info "Applying ClickHouse schemas..."
     for migration in "$SCHEMAS_DIR"/clickhouse/*.sql; do
         info "  Applying $(basename "$migration")..."
-        if [ -n "$CLICKHOUSE_PASSWORD" ]; then
-            clickhouse-client \
-                --host "$CLICKHOUSE_HOST" \
-                --port 9000 \
-                --user "$CLICKHOUSE_USER" \
-                --password "$CLICKHOUSE_PASSWORD" \
-                --database "$CLICKHOUSE_DB" \
-                --queries-file "$migration"
-        else
-            clickhouse-client \
-                --host "$CLICKHOUSE_HOST" \
-                --port 9000 \
-                --user "$CLICKHOUSE_USER" \
-                --database "$CLICKHOUSE_DB" \
-                --queries-file "$migration"
-        fi
+        docker exec -i sentinel-clickhouse \
+            clickhouse-client --user default --database sentinel \
+            < "$migration"
     done
-
     info "ClickHouse schemas applied."
 }
 
-# ── Main ────────────────────────────────────────────────────────────
+# ── Main ─────────────────────────────────────────────────────────
 
 main() {
     info "Sentinel Database Seed Script"

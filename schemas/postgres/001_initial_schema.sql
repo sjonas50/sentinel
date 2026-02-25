@@ -67,7 +67,7 @@ CREATE TABLE api_keys (
 CREATE INDEX idx_api_keys_tenant ON api_keys (tenant_id);
 CREATE INDEX idx_api_keys_prefix ON api_keys (key_prefix);
 CREATE INDEX idx_api_keys_active ON api_keys (tenant_id)
-    WHERE revoked = FALSE AND (expires_at IS NULL OR expires_at > NOW());
+    WHERE revoked = FALSE;
 
 -- ── Sessions ───────────────────────────────────────────────────────
 
@@ -84,8 +84,7 @@ CREATE TABLE sessions (
 
 CREATE INDEX idx_sessions_user ON sessions (user_id);
 CREATE INDEX idx_sessions_token ON sessions (token_hash);
-CREATE INDEX idx_sessions_active ON sessions (tenant_id)
-    WHERE expires_at > NOW();
+CREATE INDEX idx_sessions_active ON sessions (tenant_id, expires_at);
 
 -- ── Audit Log ──────────────────────────────────────────────────────
 -- Tracks user actions in the application (not agent actions — those go to Engram).

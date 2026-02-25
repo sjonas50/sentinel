@@ -1,4 +1,4 @@
-.PHONY: build test lint docker-up docker-down clean
+.PHONY: build test lint docker-up docker-down docker-clean seed clean
 
 # ── Build ──────────────────────────────────────────────────────────
 build: build-rust build-python build-web
@@ -52,6 +52,11 @@ docker-down:
 
 docker-clean:
 	docker compose down -v
+
+seed:
+	bash scripts/seed.sh
+
+docker-fresh: docker-clean docker-up seed
 
 # ── Clean ──────────────────────────────────────────────────────────
 clean:
