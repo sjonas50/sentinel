@@ -751,7 +751,7 @@ LAYER 5 — Depends on Layer 4:
 - [x] 0.10 Connector Framework
 
 ### Phase 1: DISCOVER MVP
-- [ ] 1.1 Network Scanner
+- [x] 1.1 Network Scanner
 - [ ] 1.2 Cloud Discovery Connectors
 - [ ] 1.3 Identity Connectors
 - [ ] 1.4 Vulnerability Correlation Engine

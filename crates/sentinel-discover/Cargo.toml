@@ -1,0 +1,33 @@
+[package]
+name = "sentinel-discover"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "Network scanner daemon for the Sentinel knowledge graph"
+
+[[bin]]
+name = "sentinel-discover"
+path = "src/main.rs"
+
+[dependencies]
+sentinel-core = { path = "../sentinel-core" }
+sentinel-graph = { path = "../sentinel-graph" }
+sentinel-engram = { path = "../sentinel-engram" }
+
+tokio = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+quick-xml = { workspace = true }
+clap = { workspace = true }
+chrono = { workspace = true }
+uuid = { workspace = true }
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+config = { workspace = true }
+ipnet = { workspace = true }
+
+[dev-dependencies]
+tempfile = "3"

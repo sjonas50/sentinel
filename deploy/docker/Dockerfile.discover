@@ -1,0 +1,25 @@
+# Stage 1: Build the Rust binary
+FROM rust:1.75-bookworm AS builder
+
+WORKDIR /build
+COPY Cargo.toml Cargo.lock ./
+COPY crates/ crates/
+
+RUN cargo build --release --bin sentinel-discover
+
+# Stage 2: Runtime image with nmap
+FROM debian:bookworm-slim
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends nmap ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /build/target/release/sentinel-discover /usr/local/bin/
+
+RUN mkdir -p /var/lib/sentinel/engrams
+
+ENV SENTINEL_DISCOVER__NMAP_PATH=/usr/bin/nmap
+ENV SENTINEL_DISCOVER__ENGRAM_DIR=/var/lib/sentinel/engrams
+
+ENTRYPOINT ["sentinel-discover"]
+CMD ["--daemon"]
