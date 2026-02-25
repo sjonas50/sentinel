@@ -14,7 +14,8 @@ target-version = "py311"
 line-length = 100
 
 [tool.ruff.lint]
-select = ["E", "F", "W", "I", "N", "UP", "B", "A", "SIM", "TCH"]
+select = ["E", "F", "W", "I", "N", "UP", "B", "A", "SIM", "TC"]
+ignore = ["B008"]  # FastAPI Depends() / Query() in function defaults is idiomatic
 
 [tool.mypy]
 python_version = "3.11"

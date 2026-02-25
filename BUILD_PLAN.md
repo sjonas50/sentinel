@@ -744,8 +744,8 @@ LAYER 5 — Depends on Layer 4:
 - [x] 0.3 Database Schemas
 - [x] 0.4 Local Dev Infrastructure
 - [x] 0.5 Engram Core Library
-- [ ] 0.6 Graph Client
-- [ ] 0.7 API Layer Shell
+- [x] 0.6 Graph Client
+- [x] 0.7 API Layer Shell
 - [ ] 0.8 Dashboard Shell
 - [ ] 0.9 Policy Engine Bootstrap
 - [ ] 0.10 Connector Framework
