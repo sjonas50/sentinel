@@ -37,6 +37,17 @@ class Settings(BaseSettings):
     # Redis
     redis_url: str = "redis://localhost:6379"
 
+    # Vulnerability Correlation
+    nvd_api_key: str | None = None
+    nvd_base_url: str = (
+        "https://services.nvd.nist.gov/rest/json/cves/2.0"
+    )
+    epss_base_url: str = "https://api.first.org/data/v1/epss"
+    kev_url: str = (
+        "https://www.cisa.gov/sites/default/files/feeds"
+        "/known_exploited_vulnerabilities.json"
+    )
+
     @property
     def postgres_dsn(self) -> str:
         return (

@@ -10,7 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from sentinel_api.config import settings
 from sentinel_api.db import close_db, init_db
-from sentinel_api.routes import graph, health, ws
+from sentinel_api.routes import graph, health, vulnerabilities, ws
 
 if TYPE_CHECKING:
     from collections.abc import AsyncIterator
@@ -41,4 +41,6 @@ app.add_middleware(
 
 app.include_router(health.router)
 app.include_router(graph.router)
+app.include_router(vulnerabilities.router)
+app.include_router(vulnerabilities.asset_vuln_router)
 app.include_router(ws.router)
