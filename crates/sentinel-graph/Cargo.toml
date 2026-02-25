@@ -1,0 +1,18 @@
+[package]
+name = "sentinel-graph"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "Neo4j graph client for the Sentinel knowledge graph"
+
+[dependencies]
+sentinel-core = { path = "../sentinel-core" }
+neo4rs = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+chrono = { workspace = true }
+uuid = { workspace = true }
+tokio = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }

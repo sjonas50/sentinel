@@ -3,6 +3,7 @@ resolver = "2"
 members = [
     "crates/sentinel-core",
     "crates/sentinel-engram",
+    "crates/sentinel-graph",
 ]
 
 [workspace.package]
@@ -39,6 +40,9 @@ uuid = { version = "1", features = ["v4", "serde"] }
 
 # Hashing
 blake3 = "1"
+
+# Neo4j
+neo4rs = "0.8"
 
 [profile.release]
 lto = true
