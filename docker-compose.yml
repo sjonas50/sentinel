@@ -82,6 +82,22 @@ services:
       retries: 10
       start_period: 5s
 
+  # ── OPA (Policy Engine) ──────────────────────────────────────────
+  opa:
+    image: openpolicyagent/opa:1-static
+    container_name: sentinel-opa
+    ports:
+      - "8181:8181"
+    volumes:
+      - ./policies:/policies:ro
+    command: run --server --addr :8181 /policies
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8181/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+
 volumes:
   neo4j_data:
   neo4j_logs:
