@@ -748,7 +748,7 @@ LAYER 5 — Depends on Layer 4:
 - [x] 0.7 API Layer Shell
 - [x] 0.8 Dashboard Shell
 - [x] 0.9 Policy Engine Bootstrap
-- [ ] 0.10 Connector Framework
+- [x] 0.10 Connector Framework
 
 ### Phase 1: DISCOVER MVP
 - [ ] 1.1 Network Scanner

@@ -34,7 +34,7 @@ jobs:
           python-version: "3.12"
       - run: uv sync --all-packages --all-extras
       - run: uv run ruff check .
-      - run: uv run pytest sentinel-api/tests sentinel-policy/tests -v
+      - run: uv run pytest sentinel-api/tests sentinel-policy/tests sentinel-connectors/tests -v
 
   web:
     name: Web (lint, build, test)
