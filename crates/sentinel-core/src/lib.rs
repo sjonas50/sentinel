@@ -12,4 +12,10 @@ pub mod error;
 pub mod events;
 pub mod types;
 
+pub use config::SentinelConfig;
 pub use error::SentinelError;
+pub use events::{EventPayload, EventSource, SentinelEvent};
+pub use types::{
+    AttackPath, AttackStep, Edge, EdgeProperties, EdgeType, Host, Node, NodeId, Service, Subnet,
+    TenantId, User, Vpc, Vulnerability,
+};
