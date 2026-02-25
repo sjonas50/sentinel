@@ -154,8 +154,8 @@ impl GraphClient {
         let label = node_label(node);
         let tenant_id = node.tenant_id().0.to_string();
         let node_id = node.id().0.to_string();
-        let props_json = serde_json::to_string(node)
-            .map_err(|e| GraphError::Serialization(e.to_string()))?;
+        let props_json =
+            serde_json::to_string(node).map_err(|e| GraphError::Serialization(e.to_string()))?;
 
         let cypher = format!(
             "MERGE (n:{label} {{tenant_id: $tenant_id, id: $id}})

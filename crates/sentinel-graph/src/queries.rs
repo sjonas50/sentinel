@@ -135,11 +135,7 @@ impl GraphClient {
     }
 
     /// Count nodes of a given label for a tenant.
-    pub async fn count_nodes(
-        &self,
-        tenant_id: &TenantId,
-        label: &str,
-    ) -> Result<i64, GraphError> {
+    pub async fn count_nodes(&self, tenant_id: &TenantId, label: &str) -> Result<i64, GraphError> {
         let cypher = format!(
             "MATCH (n:{label} {{tenant_id: $tenant_id}})
              RETURN count(n) AS cnt"
@@ -185,9 +181,9 @@ impl GraphClient {
 
             let node_record = neo4j_node_to_record(&neo_node, &label);
 
-            let neo_rel: neo4rs::Relation = row.get("r").map_err(|e| {
-                GraphError::Serialization(format!("Failed to get relation: {e}"))
-            })?;
+            let neo_rel: neo4rs::Relation = row
+                .get("r")
+                .map_err(|e| GraphError::Serialization(format!("Failed to get relation: {e}")))?;
 
             let edge_record = EdgeRecord {
                 id: neo_rel.get::<String>("id").unwrap_or_default(),

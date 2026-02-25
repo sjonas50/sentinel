@@ -57,6 +57,7 @@ fn make_host(tenant_id: &TenantId, ip: &str, hostname: &str) -> Host {
 }
 
 #[tokio::test]
+#[ignore = "requires live Neo4j — run with: cargo test --package sentinel-graph --test integration -- --ignored"]
 async fn test_upsert_and_get_host() {
     let Some(client) = connect_or_skip().await else {
         return;
@@ -86,6 +87,7 @@ async fn test_upsert_and_get_host() {
 }
 
 #[tokio::test]
+#[ignore = "requires live Neo4j"]
 async fn test_upsert_host_is_idempotent() {
     let Some(client) = connect_or_skip().await else {
         return;
@@ -107,6 +109,7 @@ async fn test_upsert_host_is_idempotent() {
 }
 
 #[tokio::test]
+#[ignore = "requires live Neo4j"]
 async fn test_upsert_service_and_list() {
     let Some(client) = connect_or_skip().await else {
         return;
@@ -140,6 +143,7 @@ async fn test_upsert_service_and_list() {
 }
 
 #[tokio::test]
+#[ignore = "requires live Neo4j"]
 async fn test_upsert_user() {
     let Some(client) = connect_or_skip().await else {
         return;
@@ -170,6 +174,7 @@ async fn test_upsert_user() {
 }
 
 #[tokio::test]
+#[ignore = "requires live Neo4j"]
 async fn test_upsert_vulnerability() {
     let Some(client) = connect_or_skip().await else {
         return;
@@ -201,6 +206,7 @@ async fn test_upsert_vulnerability() {
 }
 
 #[tokio::test]
+#[ignore = "requires live Neo4j"]
 async fn test_upsert_edge_and_neighbors() {
     let Some(client) = connect_or_skip().await else {
         return;
@@ -249,6 +255,7 @@ async fn test_upsert_edge_and_neighbors() {
 }
 
 #[tokio::test]
+#[ignore = "requires live Neo4j"]
 async fn test_find_node_by_property() {
     let Some(client) = connect_or_skip().await else {
         return;
@@ -281,6 +288,7 @@ async fn test_find_node_by_property() {
 }
 
 #[tokio::test]
+#[ignore = "requires live Neo4j"]
 async fn test_delete_node() {
     let Some(client) = connect_or_skip().await else {
         return;
