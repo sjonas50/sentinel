@@ -566,13 +566,13 @@ LAYER 5 — Depends on Layer 4:
 ### Task 2.4: Threat Hunt Agents
 **Depends on:** 2.2, 2.3
 **Acceptance criteria:**
-- [ ] 3 pre-built hunt playbooks:
+- [x] 3 pre-built hunt playbooks:
   1. **Credential Abuse:** failed logins, brute force, credential stuffing patterns
   2. **Lateral Movement:** unusual internal traffic, service account hopping, RDP chains
   3. **Data Exfiltration:** large outbound transfers, unusual destinations, DNS tunneling indicators
-- [ ] Each playbook: parameterized, produces structured findings, generates Sigma detection rules
-- [ ] Hunt findings feed: real-time display in dashboard
-- [ ] Engram trail for every hunt session
+- [x] Each playbook: parameterized, produces structured findings, generates Sigma detection rules
+- [x] Hunt findings feed: real-time display in dashboard
+- [x] Engram trail for every hunt session
 
 **Key files:**
 - `python/sentinel-agents/sentinel_agents/hunt/credential_abuse.py`
@@ -763,7 +763,7 @@ LAYER 5 — Depends on Layer 4:
 - [x] 2.1 Attack Path Calculator
 - [x] 2.2 Agent Framework Base
 - [x] 2.3 SIEM Connector (Elastic)
-- [ ] 2.4 Threat Hunt Agents
+- [x] 2.4 Threat Hunt Agents
 - [ ] 2.5 Adversarial Simulation v1
 - [ ] 2.6 Dashboard — Attack Paths & Hunt Feed
 

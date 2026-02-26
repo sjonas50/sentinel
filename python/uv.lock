@@ -2388,6 +2388,7 @@ dependencies = [
     { name = "anthropic" },
     { name = "httpx" },
     { name = "pydantic" },
+    { name = "pyyaml" },
     { name = "sentinel-api" },
     { name = "sentinel-policy" },
 ]
@@ -2406,6 +2407,7 @@ requires-dist = [
     { name = "pydantic", specifier = ">=2.10.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0" },
     { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.24" },
+    { name = "pyyaml", specifier = ">=6.0" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.9" },
     { name = "sentinel-api", editable = "sentinel-api" },
     { name = "sentinel-policy", editable = "sentinel-policy" },
