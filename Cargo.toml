@@ -5,6 +5,7 @@ members = [
     "crates/sentinel-engram",
     "crates/sentinel-graph",
     "crates/sentinel-discover",
+    "crates/sentinel-pathfind",
 ]
 
 [workspace.package]

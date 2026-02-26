@@ -237,6 +237,184 @@ impl GraphClient {
         Ok(results)
     }
 
+    // ── Subgraph Queries ────────────────────────────────────────
+
+    /// Fetch the full subgraph for a tenant: all nodes and all directed edges.
+    ///
+    /// Used by sentinel-pathfind for in-memory graph construction.
+    pub async fn fetch_subgraph(
+        &self,
+        tenant_id: &TenantId,
+        node_limit: u32,
+        edge_limit: u32,
+    ) -> Result<SubgraphResult, GraphError> {
+        // Phase 1: fetch all nodes.
+        let node_query = query(
+            "MATCH (n {tenant_id: $tenant_id})
+             RETURN n, labels(n) AS labels
+             LIMIT $limit",
+        )
+        .param("tenant_id", tenant_id.0.to_string())
+        .param("limit", node_limit as i64);
+
+        let node_rows = self.query_rows(node_query).await?;
+        let mut nodes = Vec::with_capacity(node_rows.len());
+
+        for row in &node_rows {
+            let neo_node: neo4rs::Node = row.get("n").map_err(|e| {
+                GraphError::Serialization(format!("Failed to deserialize subgraph node: {e}"))
+            })?;
+            let labels: Vec<String> = row.get("labels").unwrap_or_default();
+            let label = labels.first().cloned().unwrap_or_default();
+            nodes.push(neo4j_node_to_record(&neo_node, &label));
+        }
+
+        // Phase 2: fetch all directed edges.
+        let edge_query = query(
+            "MATCH (a {tenant_id: $tenant_id})-[r]->(b {tenant_id: $tenant_id})
+             RETURN r, type(r) AS rel_type, a.id AS src, b.id AS tgt
+             LIMIT $limit",
+        )
+        .param("tenant_id", tenant_id.0.to_string())
+        .param("limit", edge_limit as i64);
+
+        let edge_rows = self.query_rows(edge_query).await?;
+        let mut edges = Vec::with_capacity(edge_rows.len());
+
+        for row in &edge_rows {
+            let rel_type: String = row.get("rel_type").unwrap_or_default();
+            let src: String = row.get("src").unwrap_or_default();
+            let tgt: String = row.get("tgt").unwrap_or_default();
+            let neo_rel: neo4rs::Relation = row.get("r").map_err(|e| {
+                GraphError::Serialization(format!("Failed to deserialize subgraph edge: {e}"))
+            })?;
+            let edge_id: String = neo_rel.get("id").unwrap_or_default();
+
+            // Extract edge properties.
+            let mut props = serde_json::Map::new();
+            for key in &["exploitability_score", "protocol", "port", "encrypted"] {
+                if let Ok(v) = neo_rel.get::<String>(key) {
+                    props.insert((*key).to_string(), serde_json::Value::String(v));
+                }
+            }
+            // Try numeric exploitability_score.
+            if !props.contains_key("exploitability_score") {
+                if let Ok(v) = neo_rel.get::<f64>("exploitability_score") {
+                    props.insert(
+                        "exploitability_score".to_string(),
+                        serde_json::Value::from(v),
+                    );
+                }
+            }
+
+            edges.push(EdgeRecord {
+                id: edge_id,
+                edge_type: rel_type,
+                source_id: src,
+                target_id: tgt,
+                properties: serde_json::Value::Object(props),
+            });
+        }
+
+        Ok(SubgraphResult { nodes, edges })
+    }
+
+    /// Fetch a neighborhood subgraph within N hops of a specific node.
+    pub async fn fetch_neighborhood(
+        &self,
+        tenant_id: &TenantId,
+        center_node_id: &str,
+        max_hops: u32,
+    ) -> Result<SubgraphResult, GraphError> {
+        // Fetch nodes within N hops.
+        let node_query = query(&format!(
+            "MATCH (center {{tenant_id: $tenant_id, id: $center_id}})
+             MATCH p = (center)-[*..{max_hops}]-(n)
+             WHERE n.tenant_id = $tenant_id
+             WITH DISTINCT n
+             RETURN n, labels(n) AS labels"
+        ))
+        .param("tenant_id", tenant_id.0.to_string())
+        .param("center_id", center_node_id.to_string());
+
+        let node_rows = self.query_rows(node_query).await?;
+        let mut nodes = Vec::with_capacity(node_rows.len() + 1);
+
+        // Also add the center node itself.
+        let center_query = query(
+            "MATCH (n {tenant_id: $tenant_id, id: $center_id})
+             RETURN n, labels(n) AS labels",
+        )
+        .param("tenant_id", tenant_id.0.to_string())
+        .param("center_id", center_node_id.to_string());
+
+        if let Some(row) = self.query_one(center_query).await? {
+            let neo_node: neo4rs::Node = row.get("n").map_err(|e| {
+                GraphError::Serialization(format!("Failed to get center node: {e}"))
+            })?;
+            let labels: Vec<String> = row.get("labels").unwrap_or_default();
+            let label = labels.first().cloned().unwrap_or_default();
+            nodes.push(neo4j_node_to_record(&neo_node, &label));
+        }
+
+        for row in &node_rows {
+            let neo_node: neo4rs::Node = row.get("n").map_err(|e| {
+                GraphError::Serialization(format!("Failed to deserialize neighborhood node: {e}"))
+            })?;
+            let labels: Vec<String> = row.get("labels").unwrap_or_default();
+            let label = labels.first().cloned().unwrap_or_default();
+            nodes.push(neo4j_node_to_record(&neo_node, &label));
+        }
+
+        // Fetch edges between nodes in the neighborhood.
+        let node_ids: Vec<String> = nodes.iter().map(|n| n.id.clone()).collect();
+        if node_ids.is_empty() {
+            return Ok(SubgraphResult {
+                nodes,
+                edges: Vec::new(),
+            });
+        }
+
+        let edge_query = query(
+            "MATCH (a {tenant_id: $tenant_id})-[r]->(b {tenant_id: $tenant_id})
+             WHERE a.id IN $ids AND b.id IN $ids
+             RETURN r, type(r) AS rel_type, a.id AS src, b.id AS tgt",
+        )
+        .param("tenant_id", tenant_id.0.to_string())
+        .param("ids", node_ids);
+
+        let edge_rows = self.query_rows(edge_query).await?;
+        let mut edges = Vec::with_capacity(edge_rows.len());
+
+        for row in &edge_rows {
+            let rel_type: String = row.get("rel_type").unwrap_or_default();
+            let src: String = row.get("src").unwrap_or_default();
+            let tgt: String = row.get("tgt").unwrap_or_default();
+            let neo_rel: neo4rs::Relation = row.get("r").map_err(|e| {
+                GraphError::Serialization(format!("Failed to get neighborhood edge: {e}"))
+            })?;
+            let edge_id: String = neo_rel.get("id").unwrap_or_default();
+
+            let mut props = serde_json::Map::new();
+            if let Ok(v) = neo_rel.get::<f64>("exploitability_score") {
+                props.insert(
+                    "exploitability_score".to_string(),
+                    serde_json::Value::from(v),
+                );
+            }
+
+            edges.push(EdgeRecord {
+                id: edge_id,
+                edge_type: rel_type,
+                source_id: src,
+                target_id: tgt,
+                properties: serde_json::Value::Object(props),
+            });
+        }
+
+        Ok(SubgraphResult { nodes, edges })
+    }
+
     // ── Full-Text Search ─────────────────────────────────────────
 
     /// Full-text search across indexed node types.

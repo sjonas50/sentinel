@@ -760,7 +760,7 @@ LAYER 5 — Depends on Layer 4:
 - [x] 1.7 Dashboard — Vulnerability Overview
 
 ### Phase 2: DEFEND MVP
-- [ ] 2.1 Attack Path Calculator
+- [x] 2.1 Attack Path Calculator
 - [ ] 2.2 Agent Framework Base
 - [ ] 2.3 SIEM Connector (Elastic)
 - [ ] 2.4 Threat Hunt Agents
