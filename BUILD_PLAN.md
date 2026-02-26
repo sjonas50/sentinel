@@ -473,13 +473,13 @@ LAYER 5 — Depends on Layer 4:
 ### Task 1.6: Dashboard — Network Map View
 **Depends on:** 0.8, 1.1, 1.2
 **Acceptance criteria:**
-- [ ] Interactive network topology visualization using D3.js force-directed graph
-- [ ] Node types visually distinguished (hosts, services, users, subnets — different shapes/colors)
-- [ ] Edge labels showing relationship type
-- [ ] Click node → detail panel (properties, vulnerabilities, connections)
-- [ ] Zoom, pan, search by IP/hostname
-- [ ] Real-time updates via WebSocket when graph changes
-- [ ] Asset inventory table view (alternative to graph view)
+- [x] Interactive network topology visualization using D3.js force-directed graph
+- [x] Node types visually distinguished (hosts, services, users, subnets — different shapes/colors)
+- [x] Edge labels showing relationship type
+- [x] Click node → detail panel (properties, vulnerabilities, connections)
+- [x] Zoom, pan, search by IP/hostname
+- [x] Real-time updates via WebSocket when graph changes
+- [x] Asset inventory table view (alternative to graph view)
 
 **Key files:**
 - `web/src/components/network-map/NetworkGraph.tsx`
@@ -756,7 +756,7 @@ LAYER 5 — Depends on Layer 4:
 - [x] 1.3 Identity Connectors
 - [x] 1.4 Vulnerability Correlation Engine
 - [x] 1.5 Configuration Auditor
-- [ ] 1.6 Dashboard — Network Map
+- [x] 1.6 Dashboard — Network Map
 - [ ] 1.7 Dashboard — Vulnerability Overview
 
 ### Phase 2: DEFEND MVP

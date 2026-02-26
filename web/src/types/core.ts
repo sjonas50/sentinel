@@ -23,6 +23,9 @@ export type PolicyType =
   | "conditional_access"
   | "network_acl";
 export type AppType = "web_app" | "container_image" | "lambda" | "daemon" | "database";
+export type FindingSeverity = "critical" | "high" | "medium" | "low" | "info";
+export type FindingStatus = "open" | "acknowledged" | "remediated" | "false_positive";
+
 export type EdgeType =
   | "CONNECTS_TO"
   | "HAS_ACCESS"
@@ -37,7 +40,8 @@ export type EdgeType =
   | "HAS_PORT"
   | "HAS_CERTIFICATE"
   | "BELONGS_TO_SUBNET"
-  | "BELONGS_TO_VPC";
+  | "BELONGS_TO_VPC"
+  | "HAS_FINDING";
 
 // ── Node Types ─────────────────────────────────────────────────────
 
@@ -204,6 +208,23 @@ export interface McpServer {
   last_seen: string;
 }
 
+export interface Finding {
+  id: string;
+  tenant_id: string;
+  rule_id: string;
+  severity: FindingSeverity;
+  title: string;
+  description: string;
+  resource_id: string;
+  resource_type: string;
+  remediation?: string;
+  details_json?: string;
+  status: FindingStatus;
+  found_at: string;
+  first_seen: string;
+  last_seen: string;
+}
+
 export type Node =
   | Host
   | Service
@@ -217,7 +238,8 @@ export type Node =
   | Vulnerability
   | Certificate
   | Application
-  | McpServer;
+  | McpServer
+  | Finding;
 
 // ── Edge Types ─────────────────────────────────────────────────────
 

@@ -124,6 +124,75 @@ export function fetchGraphStats(): Promise<GraphStatsResponse> {
   return request("/graph/stats");
 }
 
+// ── Topology ─────────────────────────────────────────────────────
+
+export interface TopologyNode {
+  id: string;
+  label: string;
+  properties: Record<string, unknown>;
+}
+
+export interface TopologyEdge {
+  id: string;
+  source_id: string;
+  target_id: string;
+  edge_type: string;
+}
+
+export interface TopologyResponse {
+  nodes: TopologyNode[];
+  edges: TopologyEdge[];
+  total_nodes: number;
+  total_edges: number;
+  truncated: boolean;
+}
+
+export function fetchTopology(
+  labels = "Host,Service,Subnet,Vpc",
+  nodeLimit = 200,
+  edgeLimit = 500,
+): Promise<TopologyResponse> {
+  return request(
+    `/graph/topology?labels=${encodeURIComponent(labels)}&node_limit=${nodeLimit}&edge_limit=${edgeLimit}`,
+  );
+}
+
+// ── Audit ────────────────────────────────────────────────────────
+
+export interface FindingsResponse {
+  findings: Record<string, unknown>[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface AuditSummaryRow {
+  severity: string;
+  status: string;
+  count: number;
+}
+
+export interface AuditSummaryResponse {
+  tenant_id: string;
+  breakdown: AuditSummaryRow[];
+}
+
+export function fetchFindings(
+  params: { severity?: string; status?: string; limit?: number; offset?: number } = {},
+): Promise<FindingsResponse> {
+  const qs = new URLSearchParams();
+  if (params.severity) qs.set("severity", params.severity);
+  if (params.status) qs.set("status", params.status);
+  if (params.limit) qs.set("limit", String(params.limit));
+  if (params.offset) qs.set("offset", String(params.offset));
+  const q = qs.toString();
+  return request(`/audit/findings${q ? `?${q}` : ""}`);
+}
+
+export function fetchAuditSummary(): Promise<AuditSummaryResponse> {
+  return request("/audit/summary");
+}
+
 // ── Auth ────────────────────────────────────────────────────────
 
 export interface LoginRequest {

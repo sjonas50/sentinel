@@ -78,3 +78,45 @@ async def test_search_requires_query_param(
 ) -> None:
     response = await client.get("/graph/search", headers=auth_headers)
     assert response.status_code == 422
+
+
+# ── Topology endpoint ─────────────────────────────────────────
+
+
+@pytest.mark.asyncio
+async def test_topology_returns_503_without_neo4j(
+    client: httpx.AsyncClient, auth_headers: dict[str, str]
+) -> None:
+    response = await client.get("/graph/topology", headers=auth_headers)
+    assert response.status_code == 503
+    assert "Neo4j" in response.json()["detail"]
+
+
+@pytest.mark.asyncio
+async def test_topology_requires_auth(client: httpx.AsyncClient) -> None:
+    response = await client.get("/graph/topology")
+    assert response.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_topology_invalid_labels_returns_empty(
+    client: httpx.AsyncClient, auth_headers: dict[str, str]
+) -> None:
+    """Labels not in the allowlist should produce an empty response, not 503."""
+    from unittest.mock import AsyncMock, MagicMock, patch
+
+    mock_driver = MagicMock()
+    with patch(
+        "sentinel_api.routes.graph.get_neo4j_driver",
+        return_value=mock_driver,
+    ):
+        response = await client.get(
+            "/graph/topology",
+            params={"labels": "NotALabel,AlsoInvalid"},
+            headers=auth_headers,
+        )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["nodes"] == []
+    assert data["edges"] == []
+    assert data["truncated"] is False

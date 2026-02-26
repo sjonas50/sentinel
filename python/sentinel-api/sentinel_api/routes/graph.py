@@ -143,6 +143,139 @@ async def search_nodes(
     return {"results": results, "count": len(results)}
 
 
+_ALLOWED_LABELS = {
+    "Host", "Service", "Port", "User", "Group", "Role",
+    "Policy", "Subnet", "Vpc", "Vulnerability", "Certificate",
+    "Application", "McpServer", "Finding", "ConfigSnapshot",
+}
+
+
+@router.get("/topology")
+async def get_topology(
+    labels: str = Query(default="Host,Service,Subnet,Vpc"),
+    node_limit: int = Query(default=200, le=500),
+    edge_limit: int = Query(default=500, le=2000),
+    user: TokenClaims = Depends(get_current_user),
+) -> dict[str, object]:
+    """Get a subgraph topology: nodes + edges in a single call."""
+    driver = _require_neo4j()
+    tenant_id = str(user.tenant_id)
+
+    label_list = [
+        lbl.strip()
+        for lbl in labels.split(",")
+        if lbl.strip() in _ALLOWED_LABELS
+    ]
+    if not label_list:
+        return {
+            "nodes": [],
+            "edges": [],
+            "total_nodes": 0,
+            "total_edges": 0,
+            "truncated": False,
+        }
+
+    # Phase 1: fetch nodes for requested labels
+    all_nodes: list[dict[str, Any]] = []
+    total_nodes = 0
+
+    per_label_limit = max(1, node_limit // len(label_list))
+
+    async with driver.session() as session:
+        for label in label_list:
+            count_cypher = (
+                f"MATCH (n:{label} {{tenant_id: $tid}})"
+                " RETURN count(n) AS cnt"
+            )
+            count_result = await session.run(
+                count_cypher, tid=tenant_id
+            )
+            count_record = await count_result.single()
+            total_nodes += (
+                count_record["cnt"] if count_record else 0
+            )
+
+            node_cypher = (
+                f"MATCH (n:{label} {{tenant_id: $tid}})"
+                " RETURN n, labels(n) AS lbls"
+                " ORDER BY n.last_seen DESC"
+                " LIMIT $lim"
+            )
+            result = await session.run(
+                node_cypher, tid=tenant_id, lim=per_label_limit
+            )
+            async for record in result:
+                node_dict = dict(record["n"])
+                node_labels = record["lbls"]
+                primary = label
+                for lbl in node_labels:
+                    if lbl in _ALLOWED_LABELS:
+                        primary = lbl
+                        break
+                all_nodes.append({
+                    "id": node_dict.get("id", ""),
+                    "label": primary,
+                    "properties": node_dict,
+                })
+
+        # Phase 2: fetch edges between collected nodes
+        node_ids = [n["id"] for n in all_nodes if n["id"]]
+        edges: list[dict[str, Any]] = []
+        total_edges = 0
+
+        if node_ids:
+            edge_count_cypher = (
+                "MATCH (a {tenant_id: $tid})-[r]-(b {tenant_id: $tid})"
+                " WHERE a.id IN $ids AND b.id IN $ids"
+                " AND a.id < b.id"
+                " RETURN count(r) AS cnt"
+            )
+            edge_count_result = await session.run(
+                edge_count_cypher, tid=tenant_id, ids=node_ids
+            )
+            edge_count_record = await edge_count_result.single()
+            total_edges = (
+                edge_count_record["cnt"]
+                if edge_count_record
+                else 0
+            )
+
+            edge_cypher = (
+                "MATCH (a {tenant_id: $tid})-[r]-(b {tenant_id: $tid})"
+                " WHERE a.id IN $ids AND b.id IN $ids"
+                " AND a.id < b.id"
+                " RETURN a.id AS src, b.id AS tgt,"
+                " type(r) AS rel_type, id(r) AS rid"
+                " LIMIT $lim"
+            )
+            edge_result = await session.run(
+                edge_cypher,
+                tid=tenant_id,
+                ids=node_ids,
+                lim=edge_limit,
+            )
+            async for record in edge_result:
+                edges.append({
+                    "id": str(record["rid"]),
+                    "source_id": record["src"],
+                    "target_id": record["tgt"],
+                    "edge_type": record["rel_type"],
+                })
+
+    truncated = (
+        len(all_nodes) < total_nodes
+        or len(edges) < total_edges
+    )
+
+    return {
+        "nodes": all_nodes,
+        "edges": edges,
+        "total_nodes": total_nodes,
+        "total_edges": total_edges,
+        "truncated": truncated,
+    }
+
+
 @router.get("/stats")
 async def graph_stats(
     user: TokenClaims = Depends(get_current_user),
