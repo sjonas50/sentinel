@@ -193,6 +193,88 @@ export function fetchAuditSummary(): Promise<AuditSummaryResponse> {
   return request("/audit/summary");
 }
 
+// ── Vulnerabilities ──────────────────────────────────────────────
+
+export interface VulnListParams {
+  severity?: string;
+  exploitable?: boolean;
+  in_cisa_kev?: boolean;
+  min_cvss?: number;
+  min_epss?: number;
+  limit?: number;
+  offset?: number;
+}
+
+export interface VulnRecord {
+  id: string;
+  cve_id: string;
+  cvss_score?: number;
+  cvss_vector?: string;
+  epss_score?: number;
+  severity: string;
+  description?: string;
+  exploitable: boolean;
+  in_cisa_kev: boolean;
+  published_date?: string;
+  first_seen: string;
+  last_seen: string;
+  affected_count?: number;
+}
+
+export interface VulnListResponse {
+  vulnerabilities: VulnRecord[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface VulnSeverityRow {
+  severity: string;
+  count: number;
+}
+
+export interface VulnSummaryResponse {
+  tenant_id: string;
+  by_severity: VulnSeverityRow[];
+  total: number;
+  exploitable_count: number;
+  kev_count: number;
+}
+
+export interface VulnDetailResponse {
+  vulnerability: VulnRecord;
+}
+
+export interface VulnAssetsResponse {
+  assets: Record<string, unknown>[];
+  count: number;
+}
+
+export function listVulnerabilities(params: VulnListParams = {}): Promise<VulnListResponse> {
+  const qs = new URLSearchParams();
+  if (params.severity) qs.set("severity", params.severity);
+  if (params.exploitable !== undefined) qs.set("exploitable", String(params.exploitable));
+  if (params.in_cisa_kev !== undefined) qs.set("in_cisa_kev", String(params.in_cisa_kev));
+  if (params.min_cvss !== undefined) qs.set("min_cvss", String(params.min_cvss));
+  if (params.min_epss !== undefined) qs.set("min_epss", String(params.min_epss));
+  if (params.limit) qs.set("limit", String(params.limit));
+  if (params.offset !== undefined) qs.set("offset", String(params.offset));
+  const q = qs.toString();
+  return request(`/vulnerabilities${q ? `?${q}` : ""}`);
+}
+
+export function getVulnerability(cveId: string): Promise<VulnDetailResponse> {
+  return request(`/vulnerabilities/${encodeURIComponent(cveId)}`);
+}
+
+export function fetchVulnSummary(): Promise<VulnSummaryResponse> {
+  return request("/vulnerabilities/summary");
+}
+
+export function getVulnAssets(cveId: string, limit = 50): Promise<VulnAssetsResponse> {
+  return request(`/vulnerabilities/${encodeURIComponent(cveId)}/assets?limit=${limit}`);
+}
+
 // ── Auth ────────────────────────────────────────────────────────
 
 export interface LoginRequest {

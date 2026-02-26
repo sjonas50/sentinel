@@ -106,6 +106,57 @@ async def test_asset_vulns_503_without_neo4j(
 # ── Query param validation ────────────────────────────────────
 
 
+# ── Summary endpoint ──────────────────────────────────────────
+
+
+@pytest.mark.asyncio
+async def test_summary_requires_auth(
+    client: httpx.AsyncClient,
+) -> None:
+    response = await client.get("/vulnerabilities/summary")
+    assert response.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_summary_503_without_neo4j(
+    client: httpx.AsyncClient,
+    auth_headers: dict[str, str],
+) -> None:
+    response = await client.get(
+        "/vulnerabilities/summary", headers=auth_headers
+    )
+    assert response.status_code == 503
+    assert "Neo4j" in response.json()["detail"]
+
+
+# ── Vulnerability assets endpoint ─────────────────────────────
+
+
+@pytest.mark.asyncio
+async def test_vuln_assets_requires_auth(
+    client: httpx.AsyncClient,
+) -> None:
+    response = await client.get(
+        "/vulnerabilities/CVE-2024-1234/assets"
+    )
+    assert response.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_vuln_assets_503_without_neo4j(
+    client: httpx.AsyncClient,
+    auth_headers: dict[str, str],
+) -> None:
+    response = await client.get(
+        "/vulnerabilities/CVE-2024-1234/assets",
+        headers=auth_headers,
+    )
+    assert response.status_code == 503
+
+
+# ── Query param validation ────────────────────────────────────
+
+
 @pytest.mark.asyncio
 async def test_list_vulns_invalid_min_cvss(
     client: httpx.AsyncClient,

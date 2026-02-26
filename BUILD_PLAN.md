@@ -491,11 +491,11 @@ LAYER 5 — Depends on Layer 4:
 ### Task 1.7: Dashboard — Vulnerability Overview
 **Depends on:** 0.8, 1.4
 **Acceptance criteria:**
-- [ ] Vulnerability summary: count by severity, trend chart
-- [ ] Ranked vulnerability list with CVE details, EPSS score, affected assets
-- [ ] Click-through from vulnerability → affected assets on network map
-- [ ] CISA KEV badge for actively exploited vulnerabilities
-- [ ] Export to CSV
+- [x] Vulnerability summary: count by severity, trend chart
+- [x] Ranked vulnerability list with CVE details, EPSS score, affected assets
+- [x] Click-through from vulnerability → affected assets on network map
+- [x] CISA KEV badge for actively exploited vulnerabilities
+- [x] Export to CSV
 
 **Key files:**
 - `web/src/components/vulnerabilities/VulnSummary.tsx`
@@ -757,7 +757,7 @@ LAYER 5 — Depends on Layer 4:
 - [x] 1.4 Vulnerability Correlation Engine
 - [x] 1.5 Configuration Auditor
 - [x] 1.6 Dashboard — Network Map
-- [ ] 1.7 Dashboard — Vulnerability Overview
+- [x] 1.7 Dashboard — Vulnerability Overview
 
 ### Phase 2: DEFEND MVP
 - [ ] 2.1 Attack Path Calculator

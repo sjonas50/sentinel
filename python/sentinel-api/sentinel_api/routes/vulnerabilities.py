@@ -95,6 +95,62 @@ async def list_vulnerabilities(
     }
 
 
+# ── Summary stats ────────────────────────────────────────────
+
+
+@router.get("/summary")
+async def vulnerability_summary(
+    user: TokenClaims = Depends(get_current_user),
+) -> dict[str, object]:
+    """Get aggregate vulnerability counts by severity, plus exploitable/KEV."""
+    driver = _require_neo4j()
+    tid = str(user.tenant_id)
+
+    async with driver.session() as session:
+        # Severity breakdown
+        sev_result = await session.run(
+            "MATCH (v:Vulnerability {tenant_id: $tid}) "
+            "RETURN v.severity AS severity, count(v) AS cnt",
+            tid=tid,
+        )
+        by_severity = [
+            {"severity": r["severity"], "count": r["cnt"]}
+            async for r in sev_result
+        ]
+
+        # Total count
+        total = sum(row["count"] for row in by_severity)
+
+        # Exploitable count
+        exp_result = await session.run(
+            "MATCH (v:Vulnerability {tenant_id: $tid, exploitable: true}) "
+            "RETURN count(v) AS cnt",
+            tid=tid,
+        )
+        exp_record = await exp_result.single()
+        exploitable_count = exp_record["cnt"] if exp_record else 0
+
+        # CISA KEV count
+        kev_result = await session.run(
+            "MATCH (v:Vulnerability {tenant_id: $tid, in_cisa_kev: true}) "
+            "RETURN count(v) AS cnt",
+            tid=tid,
+        )
+        kev_record = await kev_result.single()
+        kev_count = kev_record["cnt"] if kev_record else 0
+
+    return {
+        "tenant_id": tid,
+        "by_severity": by_severity,
+        "total": total,
+        "exploitable_count": exploitable_count,
+        "kev_count": kev_count,
+    }
+
+
+# ── Vulnerability detail ─────────────────────────────────────
+
+
 @router.get("/{cve_id}")
 async def get_vulnerability(
     cve_id: str,
@@ -123,6 +179,31 @@ async def get_vulnerability(
         )
 
     return {"vulnerability": dict(record["v"])}
+
+
+@router.get("/{cve_id}/assets")
+async def get_vulnerability_assets(
+    cve_id: str,
+    limit: int = Query(default=50, le=500),
+    user: TokenClaims = Depends(get_current_user),
+) -> dict[str, object]:
+    """Get assets (services) affected by a specific vulnerability."""
+    driver = _require_neo4j()
+    tid = str(user.tenant_id)
+
+    cypher = (
+        "MATCH (s:Service {tenant_id: $tid})"
+        "-[:HAS_CVE]->(v:Vulnerability {tenant_id: $tid, cve_id: $cve_id}) "
+        "RETURN s ORDER BY s.name LIMIT $limit"
+    )
+
+    async with driver.session() as session:
+        result = await session.run(
+            cypher, tid=tid, cve_id=cve_id, limit=limit
+        )
+        records = [dict(r["s"]) async for r in result]
+
+    return {"assets": records, "count": len(records)}
 
 
 # ── Correlation sync ─────────────────────────────────────────
