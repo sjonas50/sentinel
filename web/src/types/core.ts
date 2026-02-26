@@ -310,6 +310,40 @@ export interface HuntFindingRecord {
   timestamp: string;
 }
 
+// ── Shadow AI Types ─────────────────────────────────────────────────
+
+export type AiServiceCategory =
+  | "llm_provider"
+  | "ai_platform"
+  | "code_ai"
+  | "image_media_ai"
+  | "voice_ai"
+  | "search_ai"
+  | "enterprise_ai";
+
+export type RiskTier = "critical" | "high" | "medium" | "low";
+
+export interface ShadowAiService {
+  id: string;
+  tenant_id: string;
+  service_name: string;
+  domain: string;
+  category: AiServiceCategory;
+  risk_tier: RiskTier;
+  risk_score: number;
+  sanctioned: boolean;
+  total_dns_queries: number;
+  total_network_flows: number;
+  unique_source_ips: number;
+  unique_source_hosts: number;
+  total_bytes_sent: number;
+  total_bytes_received: number;
+  source_hosts: string[];
+  source_ips: string[];
+  first_seen: string;
+  last_seen: string;
+}
+
 // ── Simulation Types ────────────────────────────────────────────────
 
 export interface SimulationRecord {

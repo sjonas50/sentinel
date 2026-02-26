@@ -402,6 +402,61 @@ export function fetchSimulationSummary(): Promise<SimulationSummaryResponse> {
   return request("/simulations/summary");
 }
 
+// ── Shadow AI (Governance) ────────────────────────────────────
+
+import type { ShadowAiService } from "../types/core";
+
+export interface ShadowAiListParams {
+  category?: string;
+  risk_tier?: string;
+  sanctioned?: boolean;
+  min_risk_score?: number;
+  limit?: number;
+  offset?: number;
+}
+
+export interface ShadowAiListResponse {
+  services: ShadowAiService[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface ShadowAiSummaryResponse {
+  tenant_id: string;
+  total_services: number;
+  unsanctioned_count: number;
+  max_risk_score: number;
+  by_category: { category: string; count: number }[];
+  by_risk_tier: { risk_tier: string; count: number }[];
+}
+
+export interface ShadowAiDetailResponse {
+  service: ShadowAiService;
+}
+
+export function listShadowAiServices(
+  params: ShadowAiListParams = {},
+): Promise<ShadowAiListResponse> {
+  const qs = new URLSearchParams();
+  if (params.category) qs.set("category", params.category);
+  if (params.risk_tier) qs.set("risk_tier", params.risk_tier);
+  if (params.sanctioned !== undefined) qs.set("sanctioned", String(params.sanctioned));
+  if (params.min_risk_score !== undefined) qs.set("min_risk_score", String(params.min_risk_score));
+  if (params.limit) qs.set("limit", String(params.limit));
+  if (params.offset !== undefined) qs.set("offset", String(params.offset));
+  const q = qs.toString();
+  return request(`/governance/shadow-ai${q ? `?${q}` : ""}`);
+}
+
+export function getShadowAiService(serviceId: string): Promise<ShadowAiDetailResponse> {
+  return request(`/governance/shadow-ai/${encodeURIComponent(serviceId)}`);
+}
+
+export function fetchShadowAiSummary(): Promise<ShadowAiSummaryResponse> {
+  return request("/governance/shadow-ai/summary");
+}
+
 // ── Auth ────────────────────────────────────────────────────────
 
 export interface LoginRequest {

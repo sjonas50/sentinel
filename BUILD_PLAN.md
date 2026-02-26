@@ -773,7 +773,7 @@ LAYER 5 — Depends on Layer 4:
 - [x] 2.6 Dashboard — Attack Paths & Hunt Feed
 
 ### Phase 3: GOVERN MVP
-- [ ] 3.1 Shadow AI Discovery
+- [x] 3.1 Shadow AI Discovery
 - [ ] 3.2 MCP Interceptor Proxy
 - [ ] 3.3 Agent Identity & Behavior
 - [ ] 3.4 AI Data Loss Prevention

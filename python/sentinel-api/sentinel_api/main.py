@@ -13,6 +13,7 @@ from sentinel_api.db import close_db, init_db
 from sentinel_api.routes import (
     attack_paths,
     audit,
+    governance,
     graph,
     health,
     hunt,
@@ -56,4 +57,5 @@ app.include_router(audit.router)
 app.include_router(attack_paths.router)
 app.include_router(hunt.router)
 app.include_router(simulations.router)
+app.include_router(governance.router)
 app.include_router(ws.router)
