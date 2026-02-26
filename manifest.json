@@ -1,0 +1,23 @@
+{
+  "id": "7fef26662e2d493591055c12640d8378",
+  "version": 1,
+  "created_at": "2026-02-25T04:48:20.464Z",
+  "finished_at": "2026-02-26T05:11:31.161Z",
+  "agent": {
+    "name": "claude-code",
+    "model": "claude-opus-4-6"
+  },
+  "git_commits": [
+    "002729295c9decfe793125651f8b033be4b01aea"
+  ],
+  "token_usage": {
+    "input_tokens": 9733,
+    "output_tokens": 178425,
+    "cache_read_tokens": 105349819,
+    "cache_write_tokens": 3269448,
+    "total_tokens": 108807425
+  },
+  "summary": "Implemented cloud discovery connectors (AWS, Azure, GCP), identity connectors (Entra ID, Okta), vulnerability correlation engine (NVD/EPSS/KEV), and began planning a configuration auditor.",
+  "capture_mode": "import",
+  "source_hash": "2f5995f1038f8541b76d92571f804d1c739954618d4e85849a21a52984682a64"
+}
