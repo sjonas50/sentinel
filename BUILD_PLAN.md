@@ -584,18 +584,23 @@ LAYER 5 — Depends on Layer 4:
 ### Task 2.5: Adversarial Simulation v1
 **Depends on:** 2.1, 2.2
 **Acceptance criteria:**
-- [ ] Offensive agents for top 20 MITRE ATT&CK techniques:
+- [x] Offensive agents for top 20 MITRE ATT&CK techniques:
   - Initial Access (phishing simulation, exposed services)
   - Lateral Movement (credential reuse, trust exploitation)
   - Privilege Escalation (misconfig exploitation)
   - Exfiltration (data path analysis)
-- [ ] All simulations run against the digital twin ONLY
-- [ ] Each simulation produces: paths found, risk scores, remediation recommendations
-- [ ] Engram captures full reasoning chain for each simulation
+- [x] All simulations run against the digital twin ONLY
+- [x] Each simulation produces: paths found, risk scores, remediation recommendations
+- [x] Engram captures full reasoning chain for each simulation
 
 **Key files:**
-- `python/sentinel-agents/sentinel_agents/simulate/offensive.py`
-- `python/sentinel-agents/sentinel_agents/simulate/mitre.py` — ATT&CK technique definitions
+- `python/sentinel-agents/sentinel_agents/simulate/base_sim.py` — SimulationAgent base class
+- `python/sentinel-agents/sentinel_agents/simulate/models.py` — GraphProtocol, SimConfig, SimulationFinding
+- `python/sentinel-agents/sentinel_agents/simulate/mitre.py` — 20 ATT&CK technique definitions
+- `python/sentinel-agents/sentinel_agents/simulate/initial_access.py` — T1190, T1133, T1566, T1078, T1199
+- `python/sentinel-agents/sentinel_agents/simulate/lateral_movement.py` — T1021.001, T1021.004, T1550.002, T1558, T1482
+- `python/sentinel-agents/sentinel_agents/simulate/privilege_escalation.py` — T1068, T1078.001, T1548, T1134, T1098
+- `python/sentinel-agents/sentinel_agents/simulate/exfiltration.py` — T1041, T1048, T1567, T1537, T1029
 
 ---
 
@@ -764,7 +769,7 @@ LAYER 5 — Depends on Layer 4:
 - [x] 2.2 Agent Framework Base
 - [x] 2.3 SIEM Connector (Elastic)
 - [x] 2.4 Threat Hunt Agents
-- [ ] 2.5 Adversarial Simulation v1
+- [x] 2.5 Adversarial Simulation v1
 - [ ] 2.6 Dashboard — Attack Paths & Hunt Feed
 
 ### Phase 3: GOVERN MVP
