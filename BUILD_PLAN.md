@@ -529,14 +529,14 @@ LAYER 5 — Depends on Layer 4:
 ### Task 2.2: Agent Framework Base (sentinel-agents)
 **Depends on:** 0.5, 0.9
 **Acceptance criteria:**
-- [ ] Python package `sentinel-agents` with:
+- [x] Python package `sentinel-agents` with:
   - `BaseAgent` class: lifecycle (init → plan → execute → report), Engram auto-capture
   - LLM provider abstraction (Claude API default, pluggable)
   - Tool registry: agents declare tools they can use
   - Policy check: every tool call validated against OPA policies before execution
   - Agent session management: start, pause, resume, cancel
   - Structured output: findings, recommendations, actions
-- [ ] Unit tests with mock LLM responses
+- [x] Unit tests with mock LLM responses
 
 **Key files:**
 - `python/sentinel-agents/sentinel_agents/base.py`
@@ -761,7 +761,7 @@ LAYER 5 — Depends on Layer 4:
 
 ### Phase 2: DEFEND MVP
 - [x] 2.1 Attack Path Calculator
-- [ ] 2.2 Agent Framework Base
+- [x] 2.2 Agent Framework Base
 - [ ] 2.3 SIEM Connector (Elastic)
 - [ ] 2.4 Threat Hunt Agents
 - [ ] 2.5 Adversarial Simulation v1
