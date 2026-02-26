@@ -58,7 +58,7 @@ describe("App routing", () => {
     setFakeAuth();
     renderApp("/defend");
     expect(screen.getByRole("heading", { name: "Defend" })).toBeDefined();
-    expect(screen.getByText("Threat Feed")).toBeDefined();
+    expect(screen.getAllByText("Attack Paths").length).toBeGreaterThan(0);
   });
 
   it("shows Govern page when authenticated", () => {

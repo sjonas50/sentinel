@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
 
 from sentinel_api.middleware.auth import TokenClaims, get_current_user
@@ -127,6 +127,26 @@ async def compute_shortest_path(
     return result
 
 
+@router.get("")
+async def list_attack_paths(
+    user: TokenClaims = Depends(get_current_user),
+    min_risk: float | None = None,
+    limit: int = Query(default=50, le=500),
+    offset: int = Query(default=0, ge=0),
+) -> dict[str, Any]:
+    """List stored attack paths for the tenant.
+
+    Returns placeholder data. In production, this would query
+    cached computation results from the database.
+    """
+    return {
+        "paths": [],
+        "total": 0,
+        "limit": limit,
+        "offset": offset,
+    }
+
+
 @router.get("/summary")
 async def attack_path_summary(
     user: TokenClaims = Depends(get_current_user),
@@ -147,3 +167,19 @@ async def attack_path_summary(
         },
         "top_paths": [],
     }
+
+
+@router.get("/{path_id}")
+async def get_attack_path(
+    path_id: str,
+    user: TokenClaims = Depends(get_current_user),
+) -> dict[str, Any]:
+    """Get a single attack path by ID.
+
+    Returns placeholder data. In production, this would query
+    cached computation results from the database.
+    """
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail=f"Attack path {path_id} not found",
+    )

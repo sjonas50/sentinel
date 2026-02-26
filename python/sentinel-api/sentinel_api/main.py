@@ -10,7 +10,16 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from sentinel_api.config import settings
 from sentinel_api.db import close_db, init_db
-from sentinel_api.routes import attack_paths, audit, graph, health, vulnerabilities, ws
+from sentinel_api.routes import (
+    attack_paths,
+    audit,
+    graph,
+    health,
+    hunt,
+    simulations,
+    vulnerabilities,
+    ws,
+)
 
 if TYPE_CHECKING:
     from collections.abc import AsyncIterator
@@ -45,4 +54,6 @@ app.include_router(vulnerabilities.router)
 app.include_router(vulnerabilities.asset_vuln_router)
 app.include_router(audit.router)
 app.include_router(attack_paths.router)
+app.include_router(hunt.router)
+app.include_router(simulations.router)
 app.include_router(ws.router)

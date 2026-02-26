@@ -770,7 +770,7 @@ LAYER 5 — Depends on Layer 4:
 - [x] 2.3 SIEM Connector (Elastic)
 - [x] 2.4 Threat Hunt Agents
 - [x] 2.5 Adversarial Simulation v1
-- [ ] 2.6 Dashboard — Attack Paths & Hunt Feed
+- [x] 2.6 Dashboard — Attack Paths & Hunt Feed
 
 ### Phase 3: GOVERN MVP
 - [ ] 3.1 Shadow AI Discovery

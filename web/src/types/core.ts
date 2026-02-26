@@ -282,3 +282,44 @@ export interface AttackPath {
   target_node: string;
   computed_at: string;
 }
+
+// ── Remediation ─────────────────────────────────────────────────────
+
+export interface RemediationStep {
+  title: string;
+  description: string;
+  priority: string;
+  effort: string;
+  automated: boolean;
+}
+
+// ── Hunt Finding Types ──────────────────────────────────────────────
+
+export interface HuntFindingRecord {
+  id: string;
+  playbook: string;
+  severity: string;
+  title: string;
+  description: string;
+  evidence: Record<string, unknown>;
+  recommendations: string[];
+  affected_hosts: string[];
+  affected_users: string[];
+  mitre_technique_ids: string[];
+  mitre_tactic: string;
+  timestamp: string;
+}
+
+// ── Simulation Types ────────────────────────────────────────────────
+
+export interface SimulationRecord {
+  id: string;
+  tactic: string;
+  techniques_tested: number;
+  techniques_with_findings: number;
+  findings_count: number;
+  highest_risk_score: number;
+  duration_seconds: number;
+  summary: string;
+  created_at: string;
+}

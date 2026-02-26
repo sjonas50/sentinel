@@ -32,6 +32,8 @@ export interface NetworkGraphProps {
   selectedNodeId?: string;
   onSelectNode?: (nodeId: string, label: string) => void;
   highlightNodeId?: string;
+  /** Set of node IDs to highlight (e.g. for attack path visualization). */
+  highlightNodeIds?: Set<string>;
 }
 
 interface SimNode extends SimulationNodeDatum {
@@ -51,6 +53,7 @@ export function NetworkGraph({
   selectedNodeId,
   onSelectNode,
   highlightNodeId,
+  highlightNodeIds,
 }: NetworkGraphProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const simRef = useRef<Simulation<SimNode, SimLink> | null>(null);
@@ -65,6 +68,9 @@ export function NetworkGraph({
 
   const highlightIdRef = useRef(highlightNodeId);
   highlightIdRef.current = highlightNodeId;
+
+  const highlightIdsRef = useRef(highlightNodeIds);
+  highlightIdsRef.current = highlightNodeIds;
 
   // Store positions from previous simulation for continuity
   const storePositions = useCallback(() => {
@@ -297,7 +303,9 @@ export function NetworkGraph({
       nodeGroup.each(function (d) {
         const el = select(this);
         const isSelected = d.id === selectedIdRef.current;
-        const isHighlighted = d.id === highlightIdRef.current;
+        const isHighlighted =
+          d.id === highlightIdRef.current ||
+          (highlightIdsRef.current?.has(d.id) ?? false);
         el.select("circle, rect, polygon")
           .attr("filter", isSelected || isHighlighted ? "url(#glow)" : null)
           .attr(

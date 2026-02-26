@@ -275,6 +275,133 @@ export function getVulnAssets(cveId: string, limit = 50): Promise<VulnAssetsResp
   return request(`/vulnerabilities/${encodeURIComponent(cveId)}/assets?limit=${limit}`);
 }
 
+// ── Attack Paths ────────────────────────────────────────────────
+
+import type { AttackPath, HuntFindingRecord, RemediationStep, SimulationRecord } from "../types/core";
+
+export interface AttackPathListParams {
+  min_risk?: number;
+  limit?: number;
+  offset?: number;
+}
+
+export interface AttackPathListResponse {
+  paths: AttackPath[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface AttackPathSummaryResponse {
+  tenant_id: string;
+  total_paths: number;
+  by_risk_tier: Record<string, number>;
+  top_paths: AttackPath[];
+}
+
+export interface AttackPathDetailResponse {
+  path: AttackPath & { remediation: RemediationStep[] };
+}
+
+export function listAttackPaths(params: AttackPathListParams = {}): Promise<AttackPathListResponse> {
+  const qs = new URLSearchParams();
+  if (params.min_risk !== undefined) qs.set("min_risk", String(params.min_risk));
+  if (params.limit) qs.set("limit", String(params.limit));
+  if (params.offset !== undefined) qs.set("offset", String(params.offset));
+  const q = qs.toString();
+  return request(`/attack-paths${q ? `?${q}` : ""}`);
+}
+
+export function getAttackPath(pathId: string): Promise<AttackPathDetailResponse> {
+  return request(`/attack-paths/${encodeURIComponent(pathId)}`);
+}
+
+export function fetchAttackPathSummary(): Promise<AttackPathSummaryResponse> {
+  return request("/attack-paths/summary");
+}
+
+// ── Hunt ────────────────────────────────────────────────────────
+
+export interface HuntFindingListParams {
+  severity?: string;
+  playbook?: string;
+  limit?: number;
+  offset?: number;
+}
+
+export interface HuntFindingListResponse {
+  findings: HuntFindingRecord[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface HuntSummaryResponse {
+  tenant_id: string;
+  by_severity: { severity: string; count: number }[];
+  total_findings: number;
+  active_hunts: number;
+}
+
+export interface HuntFindingDetailResponse {
+  finding: HuntFindingRecord;
+}
+
+export function listHuntFindings(params: HuntFindingListParams = {}): Promise<HuntFindingListResponse> {
+  const qs = new URLSearchParams();
+  if (params.severity) qs.set("severity", params.severity);
+  if (params.playbook) qs.set("playbook", params.playbook);
+  if (params.limit) qs.set("limit", String(params.limit));
+  if (params.offset !== undefined) qs.set("offset", String(params.offset));
+  const q = qs.toString();
+  return request(`/hunt/findings${q ? `?${q}` : ""}`);
+}
+
+export function getHuntFinding(findingId: string): Promise<HuntFindingDetailResponse> {
+  return request(`/hunt/findings/${encodeURIComponent(findingId)}`);
+}
+
+export function fetchHuntSummary(): Promise<HuntSummaryResponse> {
+  return request("/hunt/summary");
+}
+
+// ── Simulations ─────────────────────────────────────────────────
+
+export interface SimulationListParams {
+  tactic?: string;
+  limit?: number;
+  offset?: number;
+}
+
+export interface SimulationListResponse {
+  simulations: SimulationRecord[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface SimulationSummaryResponse {
+  tenant_id: string;
+  total_runs: number;
+  techniques_tested: number;
+  total_findings: number;
+  highest_risk_score: number;
+  by_tactic: Record<string, number>;
+}
+
+export function listSimulations(params: SimulationListParams = {}): Promise<SimulationListResponse> {
+  const qs = new URLSearchParams();
+  if (params.tactic) qs.set("tactic", params.tactic);
+  if (params.limit) qs.set("limit", String(params.limit));
+  if (params.offset !== undefined) qs.set("offset", String(params.offset));
+  const q = qs.toString();
+  return request(`/simulations${q ? `?${q}` : ""}`);
+}
+
+export function fetchSimulationSummary(): Promise<SimulationSummaryResponse> {
+  return request("/simulations/summary");
+}
+
 // ── Auth ────────────────────────────────────────────────────────
 
 export interface LoginRequest {
