@@ -32,17 +32,17 @@ def _seed_ec2() -> dict[str, str]:
     subnet = ec2.create_subnet(VpcId=vpc_id, CidrBlock="10.0.1.0/24")
     subnet_id = subnet["Subnet"]["SubnetId"]
 
-    sg = ec2.create_security_group(
-        GroupName="test-sg", Description="Test SG", VpcId=vpc_id
-    )
+    sg = ec2.create_security_group(GroupName="test-sg", Description="Test SG", VpcId=vpc_id)
     ec2.authorize_security_group_ingress(
         GroupId=sg["GroupId"],
-        IpPermissions=[{
-            "IpProtocol": "tcp",
-            "FromPort": 443,
-            "ToPort": 443,
-            "IpRanges": [{"CidrIp": "0.0.0.0/0"}],
-        }],
+        IpPermissions=[
+            {
+                "IpProtocol": "tcp",
+                "FromPort": 443,
+                "ToPort": 443,
+                "IpRanges": [{"CidrIp": "0.0.0.0/0"}],
+            }
+        ],
     )
 
     ec2.run_instances(
@@ -52,10 +52,12 @@ def _seed_ec2() -> dict[str, str]:
         MaxCount=1,
         SubnetId=subnet_id,
         SecurityGroupIds=[sg["GroupId"]],
-        TagSpecifications=[{
-            "ResourceType": "instance",
-            "Tags": [{"Key": "Name", "Value": "web-server"}],
-        }],
+        TagSpecifications=[
+            {
+                "ResourceType": "instance",
+                "Tags": [{"Key": "Name", "Value": "web-server"}],
+            }
+        ],
     )
 
     return {"vpc_id": vpc_id, "subnet_id": subnet_id, "sg_id": sg["GroupId"]}

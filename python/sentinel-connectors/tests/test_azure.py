@@ -110,15 +110,17 @@ def test_azure_discover_vms(mock_cred: MagicMock) -> None:
     mock_cred.return_value = MagicMock()
     vm = _make_mock_vm()
 
-    with patch("sentinel_connectors.cloud.azure.AzureConnector._discover_vnets"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._discover_nsgs"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._discover_users"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._discover_groups"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._discover_roles"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._discover_key_vaults"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._discover_aks_clusters"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._create_edges"), \
-         patch("azure.mgmt.compute.ComputeManagementClient") as mock_compute:
+    with (
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_vnets"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_nsgs"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_users"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_groups"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_roles"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_key_vaults"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_aks_clusters"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._create_edges"),
+        patch("azure.mgmt.compute.ComputeManagementClient") as mock_compute,
+    ):
         mock_compute.return_value.virtual_machines.list_all.return_value = [vm]
         connector = AzureConnector(tenant_id=uuid4())
         result = asyncio.run(connector.sync())
@@ -133,15 +135,17 @@ def test_azure_discover_vnets_and_subnets(mock_cred: MagicMock) -> None:
     mock_cred.return_value = MagicMock()
     vnet = _make_mock_vnet()
 
-    with patch("sentinel_connectors.cloud.azure.AzureConnector._discover_vms"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._discover_nsgs"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._discover_users"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._discover_groups"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._discover_roles"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._discover_key_vaults"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._discover_aks_clusters"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._create_edges"), \
-         patch("azure.mgmt.network.NetworkManagementClient") as mock_net:
+    with (
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_vms"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_nsgs"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_users"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_groups"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_roles"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_key_vaults"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_aks_clusters"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._create_edges"),
+        patch("azure.mgmt.network.NetworkManagementClient") as mock_net,
+    ):
         mock_net.return_value.virtual_networks.list_all.return_value = [vnet]
         connector = AzureConnector(tenant_id=uuid4())
         result = asyncio.run(connector.sync())
@@ -157,15 +161,17 @@ def test_azure_discover_nsgs(mock_cred: MagicMock) -> None:
     mock_cred.return_value = MagicMock()
     nsg = _make_mock_nsg()
 
-    with patch("sentinel_connectors.cloud.azure.AzureConnector._discover_vnets"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._discover_vms"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._discover_users"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._discover_groups"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._discover_roles"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._discover_key_vaults"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._discover_aks_clusters"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._create_edges"), \
-         patch("azure.mgmt.network.NetworkManagementClient") as mock_net:
+    with (
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_vnets"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_vms"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_users"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_groups"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_roles"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_key_vaults"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_aks_clusters"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._create_edges"),
+        patch("azure.mgmt.network.NetworkManagementClient") as mock_net,
+    ):
         mock_net.return_value.network_security_groups.list_all.return_value = [nsg]
         connector = AzureConnector(tenant_id=uuid4())
         result = asyncio.run(connector.sync())
@@ -179,15 +185,17 @@ def test_azure_discover_users(mock_cred: MagicMock) -> None:
     mock_cred.return_value = MagicMock()
     user = _make_mock_graph_user()
 
-    with patch("sentinel_connectors.cloud.azure.AzureConnector._discover_vnets"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._discover_vms"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._discover_nsgs"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._discover_groups"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._discover_roles"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._discover_key_vaults"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._discover_aks_clusters"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._create_edges"), \
-         patch("msgraph.GraphServiceClient") as mock_graph:
+    with (
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_vnets"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_vms"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_nsgs"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_groups"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_roles"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_key_vaults"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_aks_clusters"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._create_edges"),
+        patch("msgraph.GraphServiceClient") as mock_graph,
+    ):
         users_resp = MagicMock()
         users_resp.value = [user]
         mock_graph.return_value.users.get = AsyncMock(return_value=users_resp)
@@ -204,15 +212,17 @@ def test_azure_discover_groups(mock_cred: MagicMock) -> None:
     mock_cred.return_value = MagicMock()
     group = _make_mock_graph_group()
 
-    with patch("sentinel_connectors.cloud.azure.AzureConnector._discover_vnets"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._discover_vms"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._discover_nsgs"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._discover_users"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._discover_roles"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._discover_key_vaults"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._discover_aks_clusters"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._create_edges"), \
-         patch("msgraph.GraphServiceClient") as mock_graph:
+    with (
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_vnets"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_vms"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_nsgs"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_users"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_roles"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_key_vaults"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_aks_clusters"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._create_edges"),
+        patch("msgraph.GraphServiceClient") as mock_graph,
+    ):
         groups_resp = MagicMock()
         groups_resp.value = [group]
         members_resp = MagicMock()
@@ -234,15 +244,17 @@ def test_azure_discover_roles(mock_cred: MagicMock) -> None:
     mock_cred.return_value = MagicMock()
     role = _make_mock_graph_role()
 
-    with patch("sentinel_connectors.cloud.azure.AzureConnector._discover_vnets"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._discover_vms"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._discover_nsgs"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._discover_users"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._discover_groups"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._discover_key_vaults"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._discover_aks_clusters"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._create_edges"), \
-         patch("msgraph.GraphServiceClient") as mock_graph:
+    with (
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_vnets"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_vms"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_nsgs"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_users"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_groups"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_key_vaults"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_aks_clusters"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._create_edges"),
+        patch("msgraph.GraphServiceClient") as mock_graph,
+    ):
         roles_resp = MagicMock()
         roles_resp.value = [role]
         mock_graph.return_value.directory_roles.get = AsyncMock(return_value=roles_resp)
@@ -259,15 +271,17 @@ def test_azure_discover_key_vaults(mock_cred: MagicMock) -> None:
     mock_cred.return_value = MagicMock()
     vault = _make_mock_key_vault()
 
-    with patch("sentinel_connectors.cloud.azure.AzureConnector._discover_vnets"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._discover_vms"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._discover_nsgs"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._discover_users"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._discover_groups"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._discover_roles"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._discover_aks_clusters"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._create_edges"), \
-         patch("azure.mgmt.keyvault.KeyVaultManagementClient") as mock_kv:
+    with (
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_vnets"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_vms"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_nsgs"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_users"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_groups"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_roles"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_aks_clusters"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._create_edges"),
+        patch("azure.mgmt.keyvault.KeyVaultManagementClient") as mock_kv,
+    ):
         mock_kv.return_value.vaults.list.return_value = [vault]
         connector = AzureConnector(tenant_id=uuid4())
         result = asyncio.run(connector.sync())
@@ -282,15 +296,17 @@ def test_azure_discover_aks(mock_cred: MagicMock) -> None:
     mock_cred.return_value = MagicMock()
     cluster = _make_mock_aks_cluster()
 
-    with patch("sentinel_connectors.cloud.azure.AzureConnector._discover_vnets"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._discover_vms"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._discover_nsgs"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._discover_users"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._discover_groups"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._discover_roles"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._discover_key_vaults"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._create_edges"), \
-         patch("azure.mgmt.containerservice.ContainerServiceClient") as mock_aks:
+    with (
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_vnets"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_vms"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_nsgs"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_users"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_groups"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_roles"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_key_vaults"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._create_edges"),
+        patch("azure.mgmt.containerservice.ContainerServiceClient") as mock_aks,
+    ):
         mock_aks.return_value.managed_clusters.list.return_value = [cluster]
         connector = AzureConnector(tenant_id=uuid4())
         result = asyncio.run(connector.sync())
@@ -312,13 +328,15 @@ def test_azure_edges_member_of(mock_cred: MagicMock) -> None:
     user = _make_mock_graph_user(uid="user-1")
     group = _make_mock_graph_group(gid="group-1")
 
-    with patch("sentinel_connectors.cloud.azure.AzureConnector._discover_vnets"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._discover_vms"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._discover_nsgs"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._discover_key_vaults"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._discover_aks_clusters"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._discover_roles"), \
-         patch("msgraph.GraphServiceClient") as mock_graph:
+    with (
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_vnets"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_vms"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_nsgs"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_key_vaults"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_aks_clusters"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_roles"),
+        patch("msgraph.GraphServiceClient") as mock_graph,
+    ):
         # Users
         users_resp = MagicMock()
         users_resp.value = [user]
@@ -350,14 +368,16 @@ def test_azure_edges_subnet_to_vnet(mock_cred: MagicMock) -> None:
     mock_cred.return_value = MagicMock()
     vnet = _make_mock_vnet()
 
-    with patch("sentinel_connectors.cloud.azure.AzureConnector._discover_vms"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._discover_nsgs"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._discover_users"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._discover_groups"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._discover_roles"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._discover_key_vaults"), \
-         patch("sentinel_connectors.cloud.azure.AzureConnector._discover_aks_clusters"), \
-         patch("azure.mgmt.network.NetworkManagementClient") as mock_net:
+    with (
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_vms"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_nsgs"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_users"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_groups"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_roles"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_key_vaults"),
+        patch("sentinel_connectors.cloud.azure.AzureConnector._discover_aks_clusters"),
+        patch("azure.mgmt.network.NetworkManagementClient") as mock_net,
+    ):
         mock_net.return_value.virtual_networks.list_all.return_value = [vnet]
         connector = AzureConnector(tenant_id=uuid4())
         result = asyncio.run(connector.sync())

@@ -51,9 +51,7 @@ class GcpConnector(BaseConnector):
         super().__init__(tenant_id, config)
         self._creds = GcpCredentials.from_env()
         self._project = (
-            config.get("project_id", self._creds.project_id)
-            if config
-            else self._creds.project_id
+            config.get("project_id", self._creds.project_id) if config else self._creds.project_id
         )
         self._region = config.get("region", self._creds.region) if config else self._creds.region
         self._limiter = RateLimiter(calls_per_second=5.0)
@@ -97,9 +95,7 @@ class GcpConnector(BaseConnector):
         """Discover all GCP assets."""
         result = SyncResult(connector_name=self.name)
 
-        session.add_decision(
-            "full_discovery", "Discovering all supported GCP resource types", 1.0
-        )
+        session.add_decision("full_discovery", "Discovering all supported GCP resource types", 1.0)
 
         await self._discover_vpcs(result, session)
         await self._discover_subnets(result, session)
@@ -347,9 +343,7 @@ class GcpConnector(BaseConnector):
 
             client = container_v1.ClusterManagerClient()
             await self._limiter.acquire()
-            resp = client.list_clusters(
-                parent=f"projects/{self._project}/locations/-"
-            )
+            resp = client.list_clusters(parent=f"projects/{self._project}/locations/-")
             count = 0
             for cluster in resp.clusters:
                 host = Host(
@@ -463,9 +457,7 @@ class GcpConnector(BaseConnector):
                 user_uuid = self._user_email_to_uuid.get(member)
                 role_uuid = self._role_name_to_uuid.get(role_name)
                 if user_uuid and role_uuid:
-                    result.edges.append(
-                        self._make_edge(user_uuid, role_uuid, EdgeType.HAS_ACCESS)
-                    )
+                    result.edges.append(self._make_edge(user_uuid, role_uuid, EdgeType.HAS_ACCESS))
 
             # GKE → VPC (BELONGS_TO_VPC)
             for cluster_name, network_name in self._gke_network.items():
@@ -476,9 +468,7 @@ class GcpConnector(BaseConnector):
                         self._make_edge(host_uuid, vpc_uuid, EdgeType.BELONGS_TO_VPC)
                     )
 
-            session.add_action(
-                "create_edges", f"Created {len(result.edges)} edges", success=True
-            )
+            session.add_action("create_edges", f"Created {len(result.edges)} edges", success=True)
         except Exception as exc:
             result.errors.append(f"Edges: {exc}")
             session.add_action("create_edges", str(exc), success=False)

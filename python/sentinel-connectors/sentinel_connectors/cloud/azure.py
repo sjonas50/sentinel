@@ -285,17 +285,13 @@ class AzureConnector(BaseConnector):
                     # Fetch group members for MEMBER_OF edges
                     try:
                         members_resp = await graph.groups.by_group_id(g.id).members.get()
-                        member_ids = [
-                            m.id for m in (members_resp.value or []) if m.id
-                        ]
+                        member_ids = [m.id for m in (members_resp.value or []) if m.id]
                         if member_ids:
                             self._group_members[g.id] = member_ids
                     except Exception:
                         pass  # Non-critical: group membership lookup can fail
                 count += 1
-            session.add_action(
-                "discover_groups", f"Found {count} Entra ID groups", success=True
-            )
+            session.add_action("discover_groups", f"Found {count} Entra ID groups", success=True)
         except ImportError:
             msg = "Azure/Graph SDK not installed"
             result.errors.append(msg)
@@ -325,9 +321,7 @@ class AzureConnector(BaseConnector):
                 if r.id:
                     self._role_cloud_to_uuid[r.id] = role.id
                 count += 1
-            session.add_action(
-                "discover_roles", f"Found {count} Entra ID roles", success=True
-            )
+            session.add_action("discover_roles", f"Found {count} Entra ID roles", success=True)
         except ImportError:
             msg = "Azure/Graph SDK not installed"
             result.errors.append(msg)
@@ -352,9 +346,7 @@ class AzureConnector(BaseConnector):
                 )
                 result.applications.append(app)
                 count += 1
-            session.add_action(
-                "discover_key_vaults", f"Found {count} Key Vaults", success=True
-            )
+            session.add_action("discover_key_vaults", f"Found {count} Key Vaults", success=True)
         except ImportError:
             msg = "azure-mgmt-keyvault not installed — install with sentinel-connectors[azure]"
             result.errors.append(msg)
@@ -397,9 +389,7 @@ class AzureConnector(BaseConnector):
                                 self._aks_vnet[cluster_id] = parts[0]
                             break
                 count += 1
-            session.add_action(
-                "discover_aks", f"Found {count} AKS clusters", success=True
-            )
+            session.add_action("discover_aks", f"Found {count} AKS clusters", success=True)
         except ImportError:
             msg = (
                 "azure-mgmt-containerservice not installed"
@@ -446,9 +436,7 @@ class AzureConnector(BaseConnector):
                             self._make_edge(user_uuid, group_uuid, EdgeType.MEMBER_OF)
                         )
 
-            session.add_action(
-                "create_edges", f"Created {len(result.edges)} edges", success=True
-            )
+            session.add_action("create_edges", f"Created {len(result.edges)} edges", success=True)
         except Exception as exc:
             result.errors.append(f"Edges: {exc}")
             session.add_action("create_edges", str(exc), success=False)

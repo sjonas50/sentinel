@@ -549,13 +549,13 @@ LAYER 5 — Depends on Layer 4:
 ### Task 2.3: SIEM Connector — Elastic/OpenSearch
 **Depends on:** 0.10
 **Acceptance criteria:**
-- [ ] Elastic/OpenSearch connector with:
+- [x] Elastic/OpenSearch connector with:
   - Connection management (API key + basic auth)
   - Index discovery: list available indices and their fields
   - Query execution: Elasticsearch DSL queries
   - Natural language → query translation (LLM-powered)
   - Result parsing and normalization
-- [ ] Integration test with local Elastic (added to docker-compose)
+- [x] Integration test with local Elastic (added to docker-compose)
 
 **Key files:**
 - `python/sentinel-connectors/sentinel_connectors/siem/elastic.py`
@@ -762,7 +762,7 @@ LAYER 5 — Depends on Layer 4:
 ### Phase 2: DEFEND MVP
 - [x] 2.1 Attack Path Calculator
 - [x] 2.2 Agent Framework Base
-- [ ] 2.3 SIEM Connector (Elastic)
+- [x] 2.3 SIEM Connector (Elastic)
 - [ ] 2.4 Threat Hunt Agents
 - [ ] 2.5 Adversarial Simulation v1
 - [ ] 2.6 Dashboard — Attack Paths & Hunt Feed

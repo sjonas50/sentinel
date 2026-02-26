@@ -367,9 +367,7 @@ class AwsConnector(BaseConnector):
             clusters_resp = await with_retry(self._call_sync, eks.list_clusters)
             count = 0
             for cluster_name in clusters_resp.get("clusters", []):
-                detail = await with_retry(
-                    self._call_sync, eks.describe_cluster, name=cluster_name
-                )
+                detail = await with_retry(self._call_sync, eks.describe_cluster, name=cluster_name)
                 cluster = detail.get("cluster", {})
                 vpc_config = cluster.get("resourcesVpcConfig", {})
                 host = Host(
@@ -450,9 +448,7 @@ class AwsConnector(BaseConnector):
                             self._make_edge(host_uuid, subnet_uuid, EdgeType.BELONGS_TO_SUBNET)
                         )
 
-            session.add_action(
-                "create_edges", f"Created {len(result.edges)} edges", success=True
-            )
+            session.add_action("create_edges", f"Created {len(result.edges)} edges", success=True)
         except Exception as exc:
             result.errors.append(f"Edges: {exc}")
             session.add_action("create_edges", str(exc), success=False)

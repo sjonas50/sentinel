@@ -45,9 +45,7 @@ class EntraIdConnector(BaseConnector):
 
     NAME = "entra_id"
 
-    def __init__(
-        self, tenant_id: UUID, config: dict[str, Any] | None = None
-    ) -> None:
+    def __init__(self, tenant_id: UUID, config: dict[str, Any] | None = None) -> None:
         super().__init__(tenant_id, config)
         self._creds = AzureCredentials.from_env()
         self._limiter = RateLimiter(calls_per_second=5.0)
@@ -99,9 +97,7 @@ class EntraIdConnector(BaseConnector):
 
     # ── Discovery methods ─────────────────────────────────────────
 
-    async def _discover_users(
-        self, result: SyncResult, session: EngramSession
-    ) -> None:
+    async def _discover_users(self, result: SyncResult, session: EngramSession) -> None:
         """Discover Entra ID users with MFA status."""
         try:
             from msgraph import GraphServiceClient
@@ -116,10 +112,7 @@ class EntraIdConnector(BaseConnector):
                 # Check authentication methods to determine MFA status
                 if u.id:
                     try:
-                        auth_resp = (
-                            await graph.users.by_user_id(u.id)
-                            .authentication.methods.get()
-                        )
+                        auth_resp = await graph.users.by_user_id(u.id).authentication.methods.get()
                         methods = auth_resp.value or []
                         # More than 1 method means MFA (password + something)
                         mfa_enabled = len(methods) > 1
@@ -128,9 +121,7 @@ class EntraIdConnector(BaseConnector):
 
                 user = User(
                     tenant_id=self.tenant_id,
-                    username=(
-                        u.user_principal_name or u.display_name or ""
-                    ),
+                    username=(u.user_principal_name or u.display_name or ""),
                     display_name=u.display_name,
                     email=u.mail,
                     user_type=UserType.HUMAN,
@@ -155,9 +146,7 @@ class EntraIdConnector(BaseConnector):
             result.errors.append(f"Entra ID users: {exc}")
             session.add_action("discover_users", str(exc), success=False)
 
-    async def _discover_groups(
-        self, result: SyncResult, session: EngramSession
-    ) -> None:
+    async def _discover_groups(self, result: SyncResult, session: EngramSession) -> None:
         """Discover Entra ID groups and their members."""
         try:
             from msgraph import GraphServiceClient
@@ -179,15 +168,8 @@ class EntraIdConnector(BaseConnector):
                     self._group_cloud_to_uuid[g.id] = group.id
                     # Fetch group members for MEMBER_OF edges
                     try:
-                        members_resp = (
-                            await graph.groups.by_group_id(g.id)
-                            .members.get()
-                        )
-                        member_ids = [
-                            m.id
-                            for m in (members_resp.value or [])
-                            if m.id
-                        ]
+                        members_resp = await graph.groups.by_group_id(g.id).members.get()
+                        member_ids = [m.id for m in (members_resp.value or []) if m.id]
                         if member_ids:
                             self._group_members[g.id] = member_ids
                     except Exception:
@@ -206,9 +188,7 @@ class EntraIdConnector(BaseConnector):
             result.errors.append(f"Entra ID groups: {exc}")
             session.add_action("discover_groups", str(exc), success=False)
 
-    async def _discover_roles(
-        self, result: SyncResult, session: EngramSession
-    ) -> None:
+    async def _discover_roles(self, result: SyncResult, session: EngramSession) -> None:
         """Discover Entra ID directory roles and their members."""
         try:
             from msgraph import GraphServiceClient
@@ -231,16 +211,10 @@ class EntraIdConnector(BaseConnector):
                     self._role_cloud_to_uuid[r.id] = role.id
                     # Fetch role members for HAS_ACCESS edges
                     try:
-                        members_resp = (
-                            await graph.directory_roles
-                            .by_directory_role_id(r.id)
-                            .members.get()
-                        )
-                        member_ids = [
-                            m.id
-                            for m in (members_resp.value or [])
-                            if m.id
-                        ]
+                        members_resp = await graph.directory_roles.by_directory_role_id(
+                            r.id
+                        ).members.get()
+                        member_ids = [m.id for m in (members_resp.value or []) if m.id]
                         if member_ids:
                             self._role_members[r.id] = member_ids
                     except Exception:
@@ -268,9 +242,7 @@ class EntraIdConnector(BaseConnector):
 
             credential = self._get_credential()
             graph = GraphServiceClient(credential)
-            policies_resp = (
-                await graph.identity.conditional_access.policies.get()
-            )
+            policies_resp = await graph.identity.conditional_access.policies.get()
             count = 0
             for p in policies_resp.value or []:
                 await self._limiter.acquire()
@@ -297,20 +269,14 @@ class EntraIdConnector(BaseConnector):
         except ImportError:
             msg = "Azure/Graph SDK not installed"
             result.errors.append(msg)
-            session.add_action(
-                "discover_conditional_access", msg, success=False
-            )
+            session.add_action("discover_conditional_access", msg, success=False)
         except Exception as exc:
             result.errors.append(f"Conditional access: {exc}")
-            session.add_action(
-                "discover_conditional_access", str(exc), success=False
-            )
+            session.add_action("discover_conditional_access", str(exc), success=False)
 
     # ── Edge creation ─────────────────────────────────────────────
 
-    async def _create_edges(
-        self, result: SyncResult, session: EngramSession
-    ) -> None:
+    async def _create_edges(self, result: SyncResult, session: EngramSession) -> None:
         """Build graph edges from identity relationships."""
         try:
             # User → Group (MEMBER_OF)

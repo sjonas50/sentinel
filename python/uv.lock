@@ -623,6 +623,41 @@ wheels = [
 ]
 
 [[package]]
+name = "elastic-transport"
+version = "9.2.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "certifi" },
+    { name = "sniffio" },
+    { name = "urllib3" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/23/0a/a92140b666afdcb9862a16e4d80873b3c887c1b7e3f17e945fc3460edf1b/elastic_transport-9.2.1.tar.gz", hash = "sha256:97d9abd638ba8aa90faa4ca1bf1a18bde0fe2088fbc8757f2eb7b299f205773d", size = 77403, upload-time = "2025-12-23T11:54:12.849Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/2c/e6/a42b600ae8b808371f740381f6c32050cad93f870d36cc697b8b7006bf7c/elastic_transport-9.2.1-py3-none-any.whl", hash = "sha256:39e1a25e486af34ce7aa1bc9005d1c736f1b6fb04c9b64ea0604ded5a61fc1d4", size = 65327, upload-time = "2025-12-23T11:54:11.681Z" },
+]
+
+[[package]]
+name = "elasticsearch"
+version = "9.3.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "anyio" },
+    { name = "elastic-transport" },
+    { name = "python-dateutil" },
+    { name = "sniffio" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/0d/15/283459c9299d412ffa2aaab69b082857631c519233f5491d6c567e3320ca/elasticsearch-9.3.0.tar.gz", hash = "sha256:f76e149c0a22d5ccbba58bdc30c9f51cf894231b359ef4fd7e839b558b59f856", size = 893538, upload-time = "2026-02-03T20:26:38.914Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/05/37/3a196f8918743f2104cb66b1f56218079ecac6e128c061de7df7f4faef02/elasticsearch-9.3.0-py3-none-any.whl", hash = "sha256:67bd2bb4f0800f58c2847d29cd57d6e7bf5bc273483b4f17421f93e75ba09f39", size = 979405, upload-time = "2026-02-03T20:26:34.552Z" },
+]
+
+[package.optional-dependencies]
+async = [
+    { name = "aiohttp" },
+]
+
+[[package]]
 name = "fastapi"
 version = "0.133.0"
 source = { registry = "https://pypi.org/simple" }
@@ -2445,10 +2480,14 @@ azure = [
 ]
 dev = [
     { name = "boto3" },
+    { name = "elasticsearch", extra = ["async"] },
     { name = "moto", extra = ["s3"] },
     { name = "pytest" },
     { name = "pytest-asyncio" },
     { name = "ruff" },
+]
+elastic = [
+    { name = "elasticsearch", extra = ["async"] },
 ]
 gcp = [
     { name = "google-api-python-client" },
@@ -2456,6 +2495,9 @@ gcp = [
     { name = "google-cloud-compute" },
     { name = "google-cloud-container" },
     { name = "google-cloud-resource-manager" },
+]
+llm = [
+    { name = "sentinel-agents" },
 ]
 
 [package.metadata]
@@ -2467,6 +2509,8 @@ requires-dist = [
     { name = "azure-mgmt-network", marker = "extra == 'azure'", specifier = ">=28.0.0" },
     { name = "boto3", marker = "extra == 'aws'", specifier = ">=1.35.0" },
     { name = "boto3", marker = "extra == 'dev'", specifier = ">=1.35.0" },
+    { name = "elasticsearch", extras = ["async"], marker = "extra == 'dev'", specifier = ">=8.12.0" },
+    { name = "elasticsearch", extras = ["async"], marker = "extra == 'elastic'", specifier = ">=8.12.0" },
     { name = "google-api-python-client", marker = "extra == 'gcp'", specifier = ">=2.140.0" },
     { name = "google-auth", marker = "extra == 'gcp'", specifier = ">=2.34.0" },
     { name = "google-cloud-compute", marker = "extra == 'gcp'", specifier = ">=1.19.0" },
@@ -2479,9 +2523,10 @@ requires-dist = [
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0" },
     { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.24" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.9" },
+    { name = "sentinel-agents", marker = "extra == 'llm'", editable = "sentinel-agents" },
     { name = "sentinel-api", editable = "sentinel-api" },
 ]
-provides-extras = ["aws", "azure", "gcp", "dev"]
+provides-extras = ["aws", "azure", "gcp", "elastic", "llm", "dev"]
 
 [[package]]
 name = "sentinel-policy"

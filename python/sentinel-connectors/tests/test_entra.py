@@ -43,9 +43,7 @@ def _make_mock_user(
     return u
 
 
-def _make_mock_group(
-    name: str = "admins", gid: str = "group-1"
-) -> MagicMock:
+def _make_mock_group(name: str = "admins", gid: str = "group-1") -> MagicMock:
     g = MagicMock()
     g.id = gid
     g.display_name = name
@@ -53,9 +51,7 @@ def _make_mock_group(
     return g
 
 
-def _make_mock_role(
-    name: str = "Global Admin", rid: str = "role-1"
-) -> MagicMock:
+def _make_mock_role(name: str = "Global Admin", rid: str = "role-1") -> MagicMock:
     r = MagicMock()
     r.id = rid
     r.display_name = name
@@ -63,9 +59,7 @@ def _make_mock_role(
     return r
 
 
-def _make_mock_ca_policy(
-    name: str = "Require MFA", pid: str = "policy-1"
-) -> MagicMock:
+def _make_mock_ca_policy(name: str = "Require MFA", pid: str = "policy-1") -> MagicMock:
     p = MagicMock()
     p.id = pid
     p.display_name = name
@@ -92,19 +86,15 @@ def test_entra_discover_users(mock_cred: MagicMock) -> None:
     mock_cred.return_value = MagicMock()
     user = _make_mock_user()
 
-    with _patch_others("_discover_users"), \
-         patch("msgraph.GraphServiceClient") as mock_graph:
+    with _patch_others("_discover_users"), patch("msgraph.GraphServiceClient") as mock_graph:
         users_resp = MagicMock()
         users_resp.value = [user]
-        mock_graph.return_value.users.get = AsyncMock(
-            return_value=users_resp
-        )
+        mock_graph.return_value.users.get = AsyncMock(return_value=users_resp)
         # Mock auth methods for MFA check (2 methods = MFA enabled)
         auth_resp = MagicMock()
         auth_resp.value = [MagicMock(), MagicMock()]
         (
-            mock_graph.return_value.users.by_user_id
-            .return_value.authentication.methods.get
+            mock_graph.return_value.users.by_user_id.return_value.authentication.methods.get
         ) = AsyncMock(return_value=auth_resp)
 
         connector = EntraIdConnector(tenant_id=uuid4())
@@ -122,18 +112,14 @@ def test_entra_user_no_mfa(mock_cred: MagicMock) -> None:
     mock_cred.return_value = MagicMock()
     user = _make_mock_user()
 
-    with _patch_others("_discover_users"), \
-         patch("msgraph.GraphServiceClient") as mock_graph:
+    with _patch_others("_discover_users"), patch("msgraph.GraphServiceClient") as mock_graph:
         users_resp = MagicMock()
         users_resp.value = [user]
-        mock_graph.return_value.users.get = AsyncMock(
-            return_value=users_resp
-        )
+        mock_graph.return_value.users.get = AsyncMock(return_value=users_resp)
         auth_resp = MagicMock()
         auth_resp.value = [MagicMock()]  # Only password
         (
-            mock_graph.return_value.users.by_user_id
-            .return_value.authentication.methods.get
+            mock_graph.return_value.users.by_user_id.return_value.authentication.methods.get
         ) = AsyncMock(return_value=auth_resp)
 
         connector = EntraIdConnector(tenant_id=uuid4())
@@ -148,18 +134,14 @@ def test_entra_user_disabled(mock_cred: MagicMock) -> None:
     mock_cred.return_value = MagicMock()
     user = _make_mock_user(enabled=False)
 
-    with _patch_others("_discover_users"), \
-         patch("msgraph.GraphServiceClient") as mock_graph:
+    with _patch_others("_discover_users"), patch("msgraph.GraphServiceClient") as mock_graph:
         users_resp = MagicMock()
         users_resp.value = [user]
-        mock_graph.return_value.users.get = AsyncMock(
-            return_value=users_resp
-        )
+        mock_graph.return_value.users.get = AsyncMock(return_value=users_resp)
         auth_resp = MagicMock()
         auth_resp.value = []
         (
-            mock_graph.return_value.users.by_user_id
-            .return_value.authentication.methods.get
+            mock_graph.return_value.users.by_user_id.return_value.authentication.methods.get
         ) = AsyncMock(return_value=auth_resp)
 
         connector = EntraIdConnector(tenant_id=uuid4())
@@ -173,19 +155,15 @@ def test_entra_discover_groups(mock_cred: MagicMock) -> None:
     mock_cred.return_value = MagicMock()
     group = _make_mock_group()
 
-    with _patch_others("_discover_groups"), \
-         patch("msgraph.GraphServiceClient") as mock_graph:
+    with _patch_others("_discover_groups"), patch("msgraph.GraphServiceClient") as mock_graph:
         groups_resp = MagicMock()
         groups_resp.value = [group]
-        mock_graph.return_value.groups.get = AsyncMock(
-            return_value=groups_resp
-        )
+        mock_graph.return_value.groups.get = AsyncMock(return_value=groups_resp)
         members_resp = MagicMock()
         members_resp.value = []
-        (
-            mock_graph.return_value.groups.by_group_id
-            .return_value.members.get
-        ) = AsyncMock(return_value=members_resp)
+        (mock_graph.return_value.groups.by_group_id.return_value.members.get) = AsyncMock(
+            return_value=members_resp
+        )
 
         connector = EntraIdConnector(tenant_id=uuid4())
         result = asyncio.run(connector.sync())
@@ -200,18 +178,14 @@ def test_entra_discover_roles(mock_cred: MagicMock) -> None:
     mock_cred.return_value = MagicMock()
     role = _make_mock_role()
 
-    with _patch_others("_discover_roles"), \
-         patch("msgraph.GraphServiceClient") as mock_graph:
+    with _patch_others("_discover_roles"), patch("msgraph.GraphServiceClient") as mock_graph:
         roles_resp = MagicMock()
         roles_resp.value = [role]
-        mock_graph.return_value.directory_roles.get = AsyncMock(
-            return_value=roles_resp
-        )
+        mock_graph.return_value.directory_roles.get = AsyncMock(return_value=roles_resp)
         members_resp = MagicMock()
         members_resp.value = []
         (
-            mock_graph.return_value.directory_roles
-            .by_directory_role_id.return_value.members.get
+            mock_graph.return_value.directory_roles.by_directory_role_id.return_value.members.get
         ) = AsyncMock(return_value=members_resp)
 
         connector = EntraIdConnector(tenant_id=uuid4())
@@ -227,14 +201,15 @@ def test_entra_discover_conditional_access(mock_cred: MagicMock) -> None:
     mock_cred.return_value = MagicMock()
     policy = _make_mock_ca_policy()
 
-    with _patch_others("_discover_conditional_access"), \
-         patch("msgraph.GraphServiceClient") as mock_graph:
+    with (
+        _patch_others("_discover_conditional_access"),
+        patch("msgraph.GraphServiceClient") as mock_graph,
+    ):
         policies_resp = MagicMock()
         policies_resp.value = [policy]
-        (
-            mock_graph.return_value.identity
-            .conditional_access.policies.get
-        ) = AsyncMock(return_value=policies_resp)
+        (mock_graph.return_value.identity.conditional_access.policies.get) = AsyncMock(
+            return_value=policies_resp
+        )
 
         connector = EntraIdConnector(tenant_id=uuid4())
         result = asyncio.run(connector.sync())
@@ -256,41 +231,35 @@ def test_entra_edges_member_of(mock_cred: MagicMock) -> None:
     user = _make_mock_user(uid="user-1")
     group = _make_mock_group(gid="group-1")
 
-    with _patch_others("_discover_users", "_discover_groups", "_create_edges"), \
-         patch("msgraph.GraphServiceClient") as mock_graph:
+    with (
+        _patch_others("_discover_users", "_discover_groups", "_create_edges"),
+        patch("msgraph.GraphServiceClient") as mock_graph,
+    ):
         # Users
         users_resp = MagicMock()
         users_resp.value = [user]
-        mock_graph.return_value.users.get = AsyncMock(
-            return_value=users_resp
-        )
+        mock_graph.return_value.users.get = AsyncMock(return_value=users_resp)
         auth_resp = MagicMock()
         auth_resp.value = []
         (
-            mock_graph.return_value.users.by_user_id
-            .return_value.authentication.methods.get
+            mock_graph.return_value.users.by_user_id.return_value.authentication.methods.get
         ) = AsyncMock(return_value=auth_resp)
 
         # Groups with membership
         groups_resp = MagicMock()
         groups_resp.value = [group]
-        mock_graph.return_value.groups.get = AsyncMock(
-            return_value=groups_resp
-        )
+        mock_graph.return_value.groups.get = AsyncMock(return_value=groups_resp)
         member = MagicMock()
         member.id = "user-1"
         members_resp = MagicMock()
         members_resp.value = [member]
-        (
-            mock_graph.return_value.groups.by_group_id
-            .return_value.members.get
-        ) = AsyncMock(return_value=members_resp)
+        (mock_graph.return_value.groups.by_group_id.return_value.members.get) = AsyncMock(
+            return_value=members_resp
+        )
 
         connector = EntraIdConnector(tenant_id=uuid4())
         result = asyncio.run(connector.sync())
-        member_edges = [
-            e for e in result.edges if e.edge_type == EdgeType.MEMBER_OF
-        ]
+        member_edges = [e for e in result.edges if e.edge_type == EdgeType.MEMBER_OF]
         assert len(member_edges) == 1
 
 
@@ -303,49 +272,45 @@ def test_entra_edges_has_access(mock_cred: MagicMock) -> None:
     user = _make_mock_user(uid="user-1")
     role = _make_mock_role(rid="role-1")
 
-    with _patch_others("_discover_users", "_discover_roles", "_create_edges"), \
-         patch("msgraph.GraphServiceClient") as mock_graph:
+    with (
+        _patch_others("_discover_users", "_discover_roles", "_create_edges"),
+        patch("msgraph.GraphServiceClient") as mock_graph,
+    ):
         # Users
         users_resp = MagicMock()
         users_resp.value = [user]
-        mock_graph.return_value.users.get = AsyncMock(
-            return_value=users_resp
-        )
+        mock_graph.return_value.users.get = AsyncMock(return_value=users_resp)
         auth_resp = MagicMock()
         auth_resp.value = []
         (
-            mock_graph.return_value.users.by_user_id
-            .return_value.authentication.methods.get
+            mock_graph.return_value.users.by_user_id.return_value.authentication.methods.get
         ) = AsyncMock(return_value=auth_resp)
 
         # Roles with membership
         roles_resp = MagicMock()
         roles_resp.value = [role]
-        mock_graph.return_value.directory_roles.get = AsyncMock(
-            return_value=roles_resp
-        )
+        mock_graph.return_value.directory_roles.get = AsyncMock(return_value=roles_resp)
         member = MagicMock()
         member.id = "user-1"
         members_resp = MagicMock()
         members_resp.value = [member]
         (
-            mock_graph.return_value.directory_roles
-            .by_directory_role_id.return_value.members.get
+            mock_graph.return_value.directory_roles.by_directory_role_id.return_value.members.get
         ) = AsyncMock(return_value=members_resp)
 
         connector = EntraIdConnector(tenant_id=uuid4())
         result = asyncio.run(connector.sync())
-        access_edges = [
-            e for e in result.edges if e.edge_type == EdgeType.HAS_ACCESS
-        ]
+        access_edges = [e for e in result.edges if e.edge_type == EdgeType.HAS_ACCESS]
         assert len(access_edges) == 1
 
 
 def test_entra_health_check_no_creds() -> None:
     """Health check returns False when no credentials are set."""
     for key in (
-        "AZURE_TENANT_ID", "AZURE_CLIENT_ID",
-        "AZURE_CLIENT_SECRET", "AZURE_SUBSCRIPTION_ID",
+        "AZURE_TENANT_ID",
+        "AZURE_CLIENT_ID",
+        "AZURE_CLIENT_SECRET",
+        "AZURE_SUBSCRIPTION_ID",
     ):
         os.environ.pop(key, None)
     connector = EntraIdConnector(tenant_id=uuid4())

@@ -98,6 +98,27 @@ services:
       retries: 10
       start_period: 5s
 
+  # ── Elasticsearch (SIEM Log Store) ──────────────────────────────
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.17.0
+    container_name: sentinel-elasticsearch
+    ports:
+      - "9200:9200"
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      xpack.security.enrollment.enabled: "false"
+      ES_JAVA_OPTS: "-Xms512m -Xmx512m"
+      cluster.name: sentinel-dev
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9200/_cluster/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 30s
+
 volumes:
   neo4j_data:
   neo4j_logs:
@@ -105,3 +126,4 @@ volumes:
   clickhouse_data:
   clickhouse_logs:
   redis_data:
+  elasticsearch_data:

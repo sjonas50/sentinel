@@ -86,3 +86,31 @@ class OktaCredentials:
             domain=os.environ.get("OKTA_DOMAIN", ""),
             api_token=os.environ.get("OKTA_API_TOKEN", ""),
         )
+
+
+@dataclass(frozen=True)
+class ElasticCredentials:
+    """Elasticsearch / OpenSearch credentials."""
+
+    hosts: tuple[str, ...]
+    auth_method: str  # "api_key" or "basic"
+    api_key: str | None = None
+    username: str | None = None
+    password: str | None = None
+    ca_certs: str | None = None
+    verify_certs: bool = True
+
+    @classmethod
+    def from_env(cls) -> ElasticCredentials:
+        """Load Elasticsearch credentials from environment variables."""
+        hosts_str = os.environ.get("ELASTIC_HOSTS", "https://localhost:9200")
+        hosts = tuple(h.strip() for h in hosts_str.split(","))
+        return cls(
+            hosts=hosts,
+            auth_method=os.environ.get("ELASTIC_AUTH_METHOD", "basic"),
+            api_key=os.environ.get("ELASTIC_API_KEY"),
+            username=os.environ.get("ELASTIC_USERNAME"),
+            password=os.environ.get("ELASTIC_PASSWORD"),
+            ca_certs=os.environ.get("ELASTIC_CA_CERTS"),
+            verify_certs=os.environ.get("ELASTIC_VERIFY_CERTS", "true").lower() == "true",
+        )

@@ -263,9 +263,7 @@ def test_okta_edges_member_of() -> None:
     with patch("httpx.AsyncClient", return_value=mock_client):
         connector = OktaConnector(tenant_id=uuid4())
         result = asyncio.run(connector.sync())
-        member_edges = [
-            e for e in result.edges if e.edge_type == EdgeType.MEMBER_OF
-        ]
+        member_edges = [e for e in result.edges if e.edge_type == EdgeType.MEMBER_OF]
         assert len(member_edges) == 1
 
 
@@ -287,9 +285,7 @@ def test_okta_edges_has_access() -> None:
     with patch("httpx.AsyncClient", return_value=mock_client):
         connector = OktaConnector(tenant_id=uuid4())
         result = asyncio.run(connector.sync())
-        access_edges = [
-            e for e in result.edges if e.edge_type == EdgeType.HAS_ACCESS
-        ]
+        access_edges = [e for e in result.edges if e.edge_type == EdgeType.HAS_ACCESS]
         assert len(access_edges) == 1
 
 

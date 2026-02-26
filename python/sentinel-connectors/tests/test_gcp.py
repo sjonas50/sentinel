@@ -21,7 +21,9 @@ def _set_gcp_env() -> None:
 def _make_mock_network(name: str = "default") -> MagicMock:
     net = MagicMock()
     net.name = name
-    net.self_link = f"https://compute.googleapis.com/compute/v1/projects/test-project/global/networks/{name}"
+    net.self_link = (
+        f"https://compute.googleapis.com/compute/v1/projects/test-project/global/networks/{name}"
+    )
     return net
 
 
@@ -34,7 +36,9 @@ def _make_mock_subnet(
     sub = MagicMock()
     sub.name = name
     sub.ip_cidr_range = cidr
-    sub.network = f"https://compute.googleapis.com/compute/v1/projects/test-project/global/networks/{network}"
+    sub.network = (
+        f"https://compute.googleapis.com/compute/v1/projects/test-project/global/networks/{network}"
+    )
     sub.self_link = f"https://compute.googleapis.com/compute/v1/projects/test-project/regions/{region}/subnetworks/{name}"
     return sub
 
@@ -65,7 +69,9 @@ def _make_mock_firewall(
 ) -> MagicMock:
     rule = MagicMock()
     rule.name = name
-    rule.network = f"https://compute.googleapis.com/compute/v1/projects/test-project/global/networks/{network}"
+    rule.network = (
+        f"https://compute.googleapis.com/compute/v1/projects/test-project/global/networks/{network}"
+    )
     rule.target_tags = target_tags or ["http-server"]
     allowed = MagicMock()
     allowed.I_p_protocol = "tcp"
@@ -94,7 +100,6 @@ def _make_mock_gke_cluster(
     cluster.network = network
     cluster.subnetwork = subnet
     return cluster
-
 
 
 # ── Discovery tests ───────────────────────────────────────────
@@ -157,9 +162,7 @@ def test_gcp_discover_instances(*mocks: MagicMock) -> None:
     with patch("google.cloud.compute_v1.InstancesClient") as mock_client:
         zone_resp = MagicMock()
         zone_resp.instances = [inst]
-        mock_client.return_value.aggregated_list.return_value = [
-            ("zones/us-central1-a", zone_resp)
-        ]
+        mock_client.return_value.aggregated_list.return_value = [("zones/us-central1-a", zone_resp)]
         connector = GcpConnector(tenant_id=uuid4())
         result = asyncio.run(connector.sync())
         assert len(result.hosts) == 1
@@ -252,8 +255,10 @@ def test_gcp_discover_gke_clusters(*mocks: MagicMock) -> None:
 def test_gcp_discover_cloud_sql(*mocks: MagicMock) -> None:
     _set_gcp_env()
 
-    with patch("google.auth.default", return_value=(MagicMock(), "test-project")), \
-         patch("googleapiclient.discovery.build") as mock_build:
+    with (
+        patch("google.auth.default", return_value=(MagicMock(), "test-project")),
+        patch("googleapiclient.discovery.build") as mock_build,
+    ):
         mock_service = MagicMock()
         mock_service.instances.return_value.list.return_value.execute.return_value = {
             "items": [{"name": "test-pg", "databaseVersion": "POSTGRES_15", "state": "RUNNABLE"}]
@@ -276,8 +281,10 @@ def test_gcp_discover_cloud_sql(*mocks: MagicMock) -> None:
 def test_gcp_discover_cloud_sql_mysql(*mocks: MagicMock) -> None:
     _set_gcp_env()
 
-    with patch("google.auth.default", return_value=(MagicMock(), "test-project")), \
-         patch("googleapiclient.discovery.build") as mock_build:
+    with (
+        patch("google.auth.default", return_value=(MagicMock(), "test-project")),
+        patch("googleapiclient.discovery.build") as mock_build,
+    ):
         mock_service = MagicMock()
         mock_service.instances.return_value.list.return_value.execute.return_value = {
             "items": [{"name": "test-mysql", "databaseVersion": "MYSQL_8_0", "state": "RUNNABLE"}]
@@ -298,13 +305,15 @@ def test_gcp_edges_instance_to_subnet() -> None:
     sub = _make_mock_subnet()
     inst = _make_mock_instance(subnet_link=sub.self_link)
 
-    with patch("google.cloud.compute_v1.NetworksClient") as mock_net, \
-         patch("google.cloud.compute_v1.SubnetworksClient") as mock_sub, \
-         patch("google.cloud.compute_v1.InstancesClient") as mock_inst, \
-         patch("sentinel_connectors.cloud.gcp.GcpConnector._discover_firewall_rules"), \
-         patch("sentinel_connectors.cloud.gcp.GcpConnector._discover_iam"), \
-         patch("sentinel_connectors.cloud.gcp.GcpConnector._discover_gke_clusters"), \
-         patch("sentinel_connectors.cloud.gcp.GcpConnector._discover_cloud_sql"):
+    with (
+        patch("google.cloud.compute_v1.NetworksClient") as mock_net,
+        patch("google.cloud.compute_v1.SubnetworksClient") as mock_sub,
+        patch("google.cloud.compute_v1.InstancesClient") as mock_inst,
+        patch("sentinel_connectors.cloud.gcp.GcpConnector._discover_firewall_rules"),
+        patch("sentinel_connectors.cloud.gcp.GcpConnector._discover_iam"),
+        patch("sentinel_connectors.cloud.gcp.GcpConnector._discover_gke_clusters"),
+        patch("sentinel_connectors.cloud.gcp.GcpConnector._discover_cloud_sql"),
+    ):
         mock_net.return_value.list.return_value = [net]
         region_resp = MagicMock()
         region_resp.subnetworks = [sub]
@@ -325,13 +334,15 @@ def test_gcp_edges_subnet_to_vpc() -> None:
     net = _make_mock_network()
     sub = _make_mock_subnet()
 
-    with patch("google.cloud.compute_v1.NetworksClient") as mock_net, \
-         patch("google.cloud.compute_v1.SubnetworksClient") as mock_sub, \
-         patch("sentinel_connectors.cloud.gcp.GcpConnector._discover_instances"), \
-         patch("sentinel_connectors.cloud.gcp.GcpConnector._discover_firewall_rules"), \
-         patch("sentinel_connectors.cloud.gcp.GcpConnector._discover_iam"), \
-         patch("sentinel_connectors.cloud.gcp.GcpConnector._discover_gke_clusters"), \
-         patch("sentinel_connectors.cloud.gcp.GcpConnector._discover_cloud_sql"):
+    with (
+        patch("google.cloud.compute_v1.NetworksClient") as mock_net,
+        patch("google.cloud.compute_v1.SubnetworksClient") as mock_sub,
+        patch("sentinel_connectors.cloud.gcp.GcpConnector._discover_instances"),
+        patch("sentinel_connectors.cloud.gcp.GcpConnector._discover_firewall_rules"),
+        patch("sentinel_connectors.cloud.gcp.GcpConnector._discover_iam"),
+        patch("sentinel_connectors.cloud.gcp.GcpConnector._discover_gke_clusters"),
+        patch("sentinel_connectors.cloud.gcp.GcpConnector._discover_cloud_sql"),
+    ):
         mock_net.return_value.list.return_value = [net]
         region_resp = MagicMock()
         region_resp.subnetworks = [sub]
@@ -349,13 +360,15 @@ def test_gcp_edges_firewall_exposes() -> None:
     fw = _make_mock_firewall(target_tags=["http-server"])
     inst = _make_mock_instance()  # has tag "http-server"
 
-    with patch("sentinel_connectors.cloud.gcp.GcpConnector._discover_vpcs"), \
-         patch("sentinel_connectors.cloud.gcp.GcpConnector._discover_subnets"), \
-         patch("google.cloud.compute_v1.InstancesClient") as mock_inst, \
-         patch("google.cloud.compute_v1.FirewallsClient") as mock_fw, \
-         patch("sentinel_connectors.cloud.gcp.GcpConnector._discover_iam"), \
-         patch("sentinel_connectors.cloud.gcp.GcpConnector._discover_gke_clusters"), \
-         patch("sentinel_connectors.cloud.gcp.GcpConnector._discover_cloud_sql"):
+    with (
+        patch("sentinel_connectors.cloud.gcp.GcpConnector._discover_vpcs"),
+        patch("sentinel_connectors.cloud.gcp.GcpConnector._discover_subnets"),
+        patch("google.cloud.compute_v1.InstancesClient") as mock_inst,
+        patch("google.cloud.compute_v1.FirewallsClient") as mock_fw,
+        patch("sentinel_connectors.cloud.gcp.GcpConnector._discover_iam"),
+        patch("sentinel_connectors.cloud.gcp.GcpConnector._discover_gke_clusters"),
+        patch("sentinel_connectors.cloud.gcp.GcpConnector._discover_cloud_sql"),
+    ):
         zone_resp = MagicMock()
         zone_resp.instances = [inst]
         mock_inst.return_value.aggregated_list.return_value = [("zones/us-central1-a", zone_resp)]
@@ -374,13 +387,15 @@ def test_gcp_edges_iam_has_access() -> None:
     policy = MagicMock()
     policy.bindings = [binding]
 
-    with patch("sentinel_connectors.cloud.gcp.GcpConnector._discover_vpcs"), \
-         patch("sentinel_connectors.cloud.gcp.GcpConnector._discover_subnets"), \
-         patch("sentinel_connectors.cloud.gcp.GcpConnector._discover_instances"), \
-         patch("sentinel_connectors.cloud.gcp.GcpConnector._discover_firewall_rules"), \
-         patch("google.cloud.resourcemanager_v3.ProjectsClient") as mock_rm, \
-         patch("sentinel_connectors.cloud.gcp.GcpConnector._discover_gke_clusters"), \
-         patch("sentinel_connectors.cloud.gcp.GcpConnector._discover_cloud_sql"):
+    with (
+        patch("sentinel_connectors.cloud.gcp.GcpConnector._discover_vpcs"),
+        patch("sentinel_connectors.cloud.gcp.GcpConnector._discover_subnets"),
+        patch("sentinel_connectors.cloud.gcp.GcpConnector._discover_instances"),
+        patch("sentinel_connectors.cloud.gcp.GcpConnector._discover_firewall_rules"),
+        patch("google.cloud.resourcemanager_v3.ProjectsClient") as mock_rm,
+        patch("sentinel_connectors.cloud.gcp.GcpConnector._discover_gke_clusters"),
+        patch("sentinel_connectors.cloud.gcp.GcpConnector._discover_cloud_sql"),
+    ):
         mock_rm.return_value.get_iam_policy.return_value = policy
         connector = GcpConnector(tenant_id=uuid4())
         result = asyncio.run(connector.sync())

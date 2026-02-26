@@ -42,9 +42,7 @@ class OktaConnector(BaseConnector):
 
     NAME = "okta"
 
-    def __init__(
-        self, tenant_id: UUID, config: dict[str, Any] | None = None
-    ) -> None:
+    def __init__(self, tenant_id: UUID, config: dict[str, Any] | None = None) -> None:
         super().__init__(tenant_id, config)
         self._creds = OktaCredentials.from_env()
         self._limiter = RateLimiter(calls_per_second=5.0)
@@ -129,9 +127,7 @@ class OktaConnector(BaseConnector):
                 mfa_enabled = None
                 if uid:
                     try:
-                        factors_resp = await client.get(
-                            f"/api/v1/users/{uid}/factors"
-                        )
+                        factors_resp = await client.get(f"/api/v1/users/{uid}/factors")
                         if factors_resp.status_code == 200:
                             factors = factors_resp.json()
                             mfa_enabled = len(factors) > 0
@@ -142,9 +138,9 @@ class OktaConnector(BaseConnector):
                     tenant_id=self.tenant_id,
                     username=profile.get("login", ""),
                     display_name=(
-                        f"{profile.get('firstName', '')}"
-                        f" {profile.get('lastName', '')}"
-                    ).strip() or None,
+                        f"{profile.get('firstName', '')} {profile.get('lastName', '')}"
+                    ).strip()
+                    or None,
                     email=profile.get("email"),
                     user_type=UserType.HUMAN,
                     source=IdentitySource.OKTA,
@@ -195,14 +191,10 @@ class OktaConnector(BaseConnector):
                     self._group_cloud_to_uuid[gid] = group.id
                     # Fetch group members
                     try:
-                        members_resp = await client.get(
-                            f"/api/v1/groups/{gid}/users"
-                        )
+                        members_resp = await client.get(f"/api/v1/groups/{gid}/users")
                         if members_resp.status_code == 200:
                             members = members_resp.json()
-                            member_ids = [
-                                m["id"] for m in members if "id" in m
-                            ]
+                            member_ids = [m["id"] for m in members if "id" in m]
                             if member_ids:
                                 self._group_members[gid] = member_ids
                     except Exception:
@@ -246,16 +238,10 @@ class OktaConnector(BaseConnector):
                     self._app_cloud_to_uuid[aid] = app.id
                     # Fetch app user assignments for HAS_ACCESS edges
                     try:
-                        users_resp = await client.get(
-                            f"/api/v1/apps/{aid}/users"
-                        )
+                        users_resp = await client.get(f"/api/v1/apps/{aid}/users")
                         if users_resp.status_code == 200:
                             app_users = users_resp.json()
-                            user_ids = [
-                                au["id"]
-                                for au in app_users
-                                if "id" in au
-                            ]
+                            user_ids = [au["id"] for au in app_users if "id" in au]
                             if user_ids:
                                 self._app_users[aid] = user_ids
                     except Exception:
@@ -280,9 +266,7 @@ class OktaConnector(BaseConnector):
         """Discover Okta access policies."""
         try:
             await self._limiter.acquire()
-            resp = await client.get(
-                "/api/v1/policies", params={"type": "ACCESS_POLICY"}
-            )
+            resp = await client.get("/api/v1/policies", params={"type": "ACCESS_POLICY"})
             resp.raise_for_status()
             policies_data = resp.json()
 
@@ -309,15 +293,11 @@ class OktaConnector(BaseConnector):
             )
         except Exception as exc:
             result.errors.append(f"Okta policies: {exc}")
-            session.add_action(
-                "discover_policies", str(exc), success=False
-            )
+            session.add_action("discover_policies", str(exc), success=False)
 
     # ── Edge creation ─────────────────────────────────────────────
 
-    async def _create_edges(
-        self, result: SyncResult, session: EngramSession
-    ) -> None:
+    async def _create_edges(self, result: SyncResult, session: EngramSession) -> None:
         """Build graph edges from Okta identity relationships."""
         try:
             # User → Group (MEMBER_OF)
