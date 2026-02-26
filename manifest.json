@@ -1,0 +1,23 @@
+{
+  "id": "fba61be294e04c98b82adf8d9b904fbd",
+  "version": 1,
+  "created_at": "2026-02-25T04:48:20.464Z",
+  "finished_at": "2026-02-26T06:16:36.235Z",
+  "agent": {
+    "name": "claude-code",
+    "model": "claude-opus-4-6"
+  },
+  "git_commits": [
+    "60dc0be3c125604bbfeac9e1ffc7703dfea0ffc4"
+  ],
+  "token_usage": {
+    "input_tokens": 14007,
+    "output_tokens": 309086,
+    "cache_read_tokens": 143611416,
+    "cache_write_tokens": 4806506,
+    "total_tokens": 148741015
+  },
+  "summary": "Implemented Tasks 1.2-1.4: added cloud discovery connectors (AWS/Azure/GCP), identity connectors (Entra ID/Okta), and vulnerability correlation engine (NVD/EPSS/KEV integration). All 205+ tests passing with clean linting.",
+  "capture_mode": "import",
+  "source_hash": "3108c50ad6102995b098192df53dfa5917f542233fde6e92cd8f7316a087f908"
+}
